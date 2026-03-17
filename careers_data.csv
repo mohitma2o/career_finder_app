@@ -1,0 +1,16 @@
+career,tech_interest,creative_interest,people_interest,analytical_interest,physical_interest,education_level,salary_usd,entry_requirements,mastery_path
+Software Engineer,9,3,4,9,2,Bachelor,120000,"Bachelor in CS/related, coding bootcamp","Master Python/Java, contribute to open source, get 3-5 yrs exp, specialize (AI/ML/DevOps)"
+Data Scientist,8,4,3,10,1,Master,140000,"Master in Stats/CS, Python/R skills","Build portfolio on Kaggle, publish papers, advanced ML certs (Google/TensorFlow)"
+Doctor,2,5,10,8,10,Doctorate,200000,"Med school (4 yrs post-bach), residency","Specialize via fellowship, continuous CME, build practice/reputation"
+Graphic Designer,2,10,6,3,4,High School,60000,"Portfolio, Adobe Suite skills, degree optional","Win design awards, freelance on Upwork, specialize (UI/UX/motion)"
+Teacher,1,6,10,5,3,Bachelor,55000,"Bachelor Education, teaching cert","Advanced degrees, leadership roles, specialize subject"
+Marketing Manager,4,8,9,6,2,Bachelor,110000,"Bachelor Marketing/Biz, experience","MBA, digital marketing certs, manage campaigns"
+Accountant,3,2,5,10,1,Bachelor,75000,"Bachelor Accounting, CPA exam","Big4 exp, CFA/others, partner track"
+Sales Engineer,7,3,9,7,5,Bachelor,130000,"Tech degree + sales exp","Product knowledge, close big deals, lead teams"
+Nurse,1,4,10,6,9,Associate,85000,"Nursing degree, RN license","Specialize (ER/ICU), NP degree, management"
+Lawyer,5,4,9,9,2,JD,160000,"Bachelor + Law School (JD), bar exam","Partner at firm, specialize (corporate/litigation), clerkships"
+Financial Analyst,6,2,4,10,1,Bachelor,85000,"Bachelor Finance, CFA Level1","Advanced CFA, investment banking, portfolio mgmt"
+UX Researcher,6,9,8,8,2,Bachelor,105000,"HCI/Psych degree, research tools","Pub research papers, tools mastery (Figma/Miro), agency work"
+Chef,1,9,8,3,10,High School,65000,"Culinary school, apprenticeship","Michelin stars, own restaurant, TV/media"
+Pilot,8,2,5,7,10,Bachelor,150000,"Flight school, commercial license","3000+ hrs, airline captain, instructor cert"
+Cybersecurity Analyst,9,1,4,9,3,Bachelor,115000,"CS degree, certs (CISSP/CEH)","Incident response exp, pentesting, CISO path
