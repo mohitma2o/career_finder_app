@@ -115,6 +115,37 @@ def _generate_synthetic_data(careers_df: pd.DataFrame, n_samples: int = 3000) ->
         "HR Manager":                dict(communication=9, interest_social=8, leadership=8, patience=8, cgpa=68),
         "Operations Manager":        dict(leadership=9, analytical=8, interest_business=8, detail_oriented=7, cgpa=72),
         "Pharmacist":                dict(interest_science=8, interest_nature=7, detail_oriented=8, patience=7, cgpa=75, stream=6),
+        "Nurse":                     dict(interest_social=9, patience=9, detail_oriented=8, interest_science=8, cgpa=70, stream=6),
+        "Dentist":                   dict(interest_science=9, detail_oriented=9, patience=8, cgpa=80, stream=6),
+        "Physiotherapist":           dict(interest_science=8, interest_social=8, patience=8, cgpa=72, stream=6),
+        "Surgeon":                   dict(interest_science=10, detail_oriented=10, patience=8, analytical=9, cgpa=90, stream=6),
+        "Pilot":                     dict(interest_technology=6, competitiveness=8, risk_tolerance=8, math_comfort=8, cgpa=75),
+        "Air Traffic Controller":    dict(analytical=9, detail_oriented=9, patience=8, communication=8, cgpa=75),
+        "Electrician":               dict(detail_oriented=8, math_comfort=7, interest_technology=6, cgpa=65, stream=5),
+        "Plumber":                   dict(detail_oriented=8, patience=7, cgpa=60),
+        "Carpenter":                 dict(creativity=7, detail_oriented=8, cgpa=60),
+        "Chef":                      dict(creativity=8, patience=7, communication=6, cgpa=62),
+        "Hotel Manager":             dict(leadership=8, communication=9, interest_business=7, cgpa=70),
+        "Sales Manager":             dict(communication=9, leadership=8, competitiveness=8, interest_business=8, cgpa=68),
+        "Investment Banker":         dict(analytical=9, math_comfort=9, leadership=7, competitiveness=9, cgpa=85, stream=3),
+        "Marketing Manager":         dict(communication=9, creativity=8, interest_business=9, leadership=7, cgpa=72),
+        "IAS Officer":               dict(leadership=9, analytical=8, communication=8, impact_importance=9, cgpa=80),
+        "Police Officer":            dict(leadership=8, competitiveness=8, patience=7, physical=8, cgpa=70),
+        "Software Tester":           dict(analytical=8, detail_oriented=9, programming=6, cgpa=70),
+        "Blockchain Developer":      dict(programming=9, analytical=8, math_comfort=8, interest_technology=10, cgpa=78),
+        "Mobile App Developer":      dict(programming=9, creativity=7, interest_technology=9, cgpa=72),
+        "Fitness Trainer":           dict(interest_nature=7, communication=8, patience=8, leadership=6, cgpa=65),
+        "Musician":                  dict(creativity=10, interest_arts=10, patience=8, cgpa=60),
+        "Photographer":              dict(creativity=9, interest_arts=9, detail_oriented=7, cgpa=62),
+        "Social Worker":             dict(interest_social=10, communication=9, patience=9, impact_importance=10, cgpa=70),
+        "Veterinarian":              dict(interest_nature=10, interest_science=9, patience=9, detail_oriented=9, cgpa=85, stream=6),
+        "Web Developer":             dict(programming=8, interest_technology=9, creativity=6, cgpa=68),
+        "Accountant":                dict(analytical=8, math_comfort=8, detail_oriented=9, cgpa=75, stream=3),
+        "Farmer/Agriculturist":      dict(interest_nature=9, patience=8, impact_importance=7, cgpa=65),
+        "Mechanical Designer":       dict(analytical=8, creativity=7, math_comfort=7, detail_oriented=8, cgpa=70, stream=5),
+        "Quality Assurance Manager": dict(analytical=8, detail_oriented=9, leadership=7, cgpa=75),
+        "Data Analyst":              dict(analytical=9, math_comfort=7, programming=6, cgpa=72),
+        "Project Manager":           dict(leadership=8, communication=8, analytical=7, cgpa=75),
     }
 
     default_sig = {f: 5 for f in FEATURE_COLS}
@@ -253,6 +284,18 @@ def _compute_skill_gaps(responses: dict, career: str) -> list[dict]:
         "Teacher / Educator":        {"communication": 9, "patience": 8, "interest_social": 8},
         "Research Scientist":        {"analytical": 9, "math_comfort": 9, "patience": 9},
         "Entrepreneur":              {"leadership": 8, "risk_tolerance": 8, "communication": 8},
+        "Nurse":                     {"patience": 9, "interest_social": 9, "detail_oriented": 8},
+        "Dentist":                   {"detail_oriented": 9, "interest_science": 9, "patience": 8},
+        "Physiotherapist":           {"patience": 8, "interest_social": 8},
+        "Surgeon":                   {"detail_oriented": 10, "analytical": 9, "interest_science": 10},
+        "Pilot":                     {"analytical": 8, "math_comfort": 8},
+        "Electrician":               {"detail_oriented": 8, "math_comfort": 7},
+        "Chef":                      {"creativity": 8},
+        "IAS Officer":               {"leadership": 9, "analytical": 8},
+        "Blockchain Developer":      {"programming": 9, "analytical": 8},
+        "Web Developer":             {"programming": 8},
+        "Project Manager":           {"leadership": 8, "communication": 8},
+        "Marketing Manager":         {"communication": 9, "creativity": 8},
     }
     reqs = requirements.get(career, {})
     gaps = []
@@ -285,8 +328,23 @@ def _generate_why(responses: dict, career: str) -> str:
                     "Cybersecurity Analyst", "Cloud Architect", "DevOps Engineer", "Game Developer"]
     creative_careers = ["UI/UX Designer", "Graphic Designer", "Architect", "Content Writer"]
     science_careers = ["Research Scientist", "Doctor (MBBS)", "Biomedical Engineer",
-                       "Environmental Scientist", "Pharmacist"]
+                       "Environmental Scientist", "Pharmacist", "Nurse", "Dentist", "Surgeon", "Veterinarian"]
+    healthcare_careers = ["Nurse", "Dentist", "Physiotherapist", "Surgeon", "Doctor (MBBS)", "Pharmacist", "Veterinarian"]
+    trades_careers = ["Electrician", "Plumber", "Carpenter"]
+    creative_careers = ["UI/UX Designer", "Graphic Designer", "Architect", "Content Writer", "Musician", "Photographer", "Chef"]
 
+    if career in tech_careers:
+        if prog >= 7:
+            reasons.append("your strong programming skills")
+        if tech >= 7:
+            reasons.append("your passion for technology")
+        if anal >= 7:
+            reasons.append("your analytical thinking")
+    elif career in creative_careers:
+        if creat >= 7:
+            reasons.append("your creative abilities")
+        if arts >= 7:
+            reasons.append("your interest in arts and design")
     if career in tech_careers:
         if prog >= 7:
             reasons.append("your strong programming skills")
@@ -304,6 +362,14 @@ def _generate_why(responses: dict, career: str) -> str:
             reasons.append("your strong interest in science")
         if math >= 7:
             reasons.append("your comfort with mathematics")
+    elif career in healthcare_careers:
+        if social >= 7:
+            reasons.append("your compassion for helping people")
+        if patience >= 7:
+            reasons.append("your patience with patients")
+    elif career in trades_careers:
+        if detail_oriented >= 7:
+            reasons.append("your hands-on detail orientation")
     elif career == "Product Manager":
         if lead >= 7:
             reasons.append("your leadership skills")
@@ -316,7 +382,7 @@ def _generate_why(responses: dict, career: str) -> str:
             reasons.append("your leadership drive")
         if biz >= 7:
             reasons.append("your passion for business")
-    elif career in ["Teacher / Educator", "Psychologist", "HR Manager"]:
+    elif career in ["Teacher / Educator", "Psychologist", "HR Manager", "IAS Officer", "Social Worker"]:
         if social >= 7:
             reasons.append("your enjoyment of helping others")
         if comm >= 7:

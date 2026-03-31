@@ -312,6 +312,23 @@ def page_results():
                         st.pyplot(fig)
                         plt.close()
 
+                # New: Roadmap and Free Resources
+                careers_df = pd.read_csv("careers_data.csv")
+                career_row = careers_df[careers_df["career"] == r['career']]
+                if not career_row.empty:
+                    row_data = career_row.iloc[0]
+                    roadmap = row_data.get("roadmap", "")
+                    resources = row_data.get("free_resources", "")
+
+                    with st.expander("🗺️ Roadmap to Success"):
+                        st.markdown(f"**{r['career']} Roadmap:**")
+                        st.markdown(roadmap.replace("→", " → "))
+
+                    with st.expander("🎓 Free Resources & Courses"):
+                        st.markdown("**Start learning today:**")
+                        for res in resources.split(","):
+                            st.markdown(f"• [{res.strip()}]")
+
                 st.markdown("")
 
     with tab2:
@@ -381,14 +398,20 @@ def page_results():
         st.markdown("### 📥 Export Your Results")
         st.markdown("Download your results as a structured JSON report:")
 
+        careers_df = pd.read_csv("careers_data.csv")
         report = {
             "generated_on": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "responses": st.session_state.responses,
-            "recommendations": [
-                {k: v for k, v in r.items() if k != "skill_gaps"}
-                for r in results
-            ],
+            "recommendations": []
         }
+        for r in results:
+            career_row = careers_df[careers_df["career"] == r["career"]]
+            rec_data = {k: v for k, v in r.items() if k != "skill_gaps"}
+            if not career_row.empty:
+                row_data = career_row.iloc[0]
+                rec_data["roadmap"] = row_data.get("roadmap", "")
+                rec_data["free_resources"] = row_data.get("free_resources", "")
+            report["recommendations"].append(rec_data)
         json_str = json.dumps(report, indent=2)
         st.download_button(
             "⬇️ Download JSON Report",
