@@ -146,6 +146,16 @@ def _generate_synthetic_data(careers_df: pd.DataFrame, n_samples: int = 3000) ->
         "Quality Assurance Manager": dict(analytical=8, detail_oriented=9, leadership=7, cgpa=75),
         "Data Analyst":              dict(analytical=9, math_comfort=7, programming=6, cgpa=72),
         "Project Manager":           dict(leadership=8, communication=8, analytical=7, cgpa=75),
+        "AI Prompt Engineer":        dict(communication=9, analytical=8, creativity=9, interest_technology=10, programming=6, cgpa=70),
+        "Web3 Security Auditor":     dict(programming=9, analytical=10, math_comfort=8, detail_oriented=10, interest_technology=10, cgpa=80),
+        "Quantum Software Developer":dict(programming=9, analytical=10, math_comfort=10, interest_science=9, interest_technology=10, cgpa=88),
+        "Generative AI Specialist":  dict(programming=9, analytical=9, creativity=8, interest_technology=10, math_comfort=8, cgpa=82),
+        "No-Code/Low-Code Developer":dict(creativity=8, analytical=7, communication=8, interest_technology=9, programming=4, cgpa=65),
+        "MLOps Engineer":            dict(programming=9, analytical=9, detail_oriented=9, interest_technology=10, math_comfort=8, cgpa=78),
+        "Sustainable Tech Analyst":  dict(analytical=8, interest_nature=9, interest_technology=8, communication=8, cgpa=75),
+        "Digital Twin Engineer":     dict(programming=8, analytical=9, math_comfort=8, interest_technology=9, detail_oriented=9, cgpa=76),
+        "Synthography Artist (AI Art)":dict(creativity=10, interest_arts=10, interest_technology=8, detail_oriented=8, cgpa=60),
+        "Cloud FinOps Practitioner": dict(analytical=9, math_comfort=8, interest_business=9, interest_technology=8, detail_oriented=9, cgpa=75),
     }
 
     default_sig = {f: 5 for f in FEATURE_COLS}
@@ -263,6 +273,8 @@ def predict_careers(responses: dict, top_n: int = 5) -> list[dict]:
             "key_skills": row.get("key_skills", "").split(","),
             "certifications": row.get("top_certifications", "").split(","),
             "work_env": row.get("work_environment", ""),
+            "roadmap": row.get("roadmap", ""),
+            "free_resources": row.get("free_resources", ""),
             "skill_gaps": skill_gap,
             "why": why,
         })
@@ -296,6 +308,16 @@ def _compute_skill_gaps(responses: dict, career: str) -> list[dict]:
         "Web Developer":             {"programming": 8},
         "Project Manager":           {"leadership": 8, "communication": 8},
         "Marketing Manager":         {"communication": 9, "creativity": 8},
+        "AI Prompt Engineer":        {"communication": 8, "creativity": 8, "interest_technology": 8},
+        "Web3 Security Auditor":     {"programming": 9, "analytical": 9, "detail_oriented": 9},
+        "Quantum Software Developer":{"programming": 9, "math_comfort": 9, "analytical": 9},
+        "Generative AI Specialist":  {"programming": 8, "analytical": 8, "interest_technology": 9},
+        "No-Code/Low-Code Developer":{"creativity": 7, "interest_technology": 8},
+        "MLOps Engineer":            {"programming": 9, "detail_oriented": 8, "analytical": 8},
+        "Sustainable Tech Analyst":  {"analytical": 8, "interest_nature": 8},
+        "Digital Twin Engineer":     {"programming": 7, "analytical": 8, "detail_oriented": 8},
+        "Synthography Artist (AI Art)":{"creativity": 9, "interest_arts": 8},
+        "Cloud FinOps Practitioner": {"analytical": 8, "interest_business": 8},
     }
     reqs = requirements.get(career, {})
     gaps = []
@@ -323,6 +345,8 @@ def _generate_why(responses: dict, career: str) -> str:
     biz = responses.get("interest_business", 0)
     risk = responses.get("risk_tolerance", 0)
     math = responses.get("math_comfort", 0)
+    patience = responses.get("patience", 0)
+    detail_oriented = responses.get("detail_oriented", 0)
 
     tech_careers = ["Software Engineer", "Machine Learning Engineer", "Data Scientist",
                     "Cybersecurity Analyst", "Cloud Architect", "DevOps Engineer", "Game Developer"]
