@@ -7,7 +7,7 @@ SECTIONS = [
     {
         "id": "academic",
         "title": "Academic Background",
-        "icon": "🎓",
+        "icon": "Academics",
         "questions": [
             {
                 "id": "education_level",
@@ -42,7 +42,7 @@ SECTIONS = [
     {
         "id": "skills",
         "title": "Skills & Abilities",
-        "icon": "🛠️",
+        "icon": "Skills",
         "questions": [
             {
                 "id": "programming",
@@ -91,7 +91,7 @@ SECTIONS = [
     {
         "id": "interests",
         "title": "Interests & Passions",
-        "icon": "❤️",
+        "icon": "Interests",
         "questions": [
             {
                 "id": "interest_technology",
@@ -140,7 +140,7 @@ SECTIONS = [
     {
         "id": "work_preferences",
         "title": "Work Preferences",
-        "icon": "💼",
+        "icon": "Work",
         "questions": [
             {
                 "id": "work_env",
@@ -180,7 +180,7 @@ SECTIONS = [
     {
         "id": "personality",
         "title": "Personality & Traits",
-        "icon": "🧠",
+        "icon": "Personality",
         "questions": [
             {
                 "id": "introvert_extrovert",
