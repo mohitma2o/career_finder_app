@@ -1,69 +1,76 @@
 # Career Finder AI 🎯
 
-An AI-powered career recommendation system that helps students discover the best-fit career paths using supervised machine learning.
+A professional, AI-powered career recommendation platform that helps students discover their ideal career paths using ensemble machine learning and interactive data visualization.
 
-## Features
+## 🚀 Tech Stack
 
-- **Multi-step questionnaire** across 5 dimensions: Academic, Skills, Interests, Work Preferences, Personality
-- **Ensemble ML model** (RandomForest + GradientBoosting + SVM with soft voting)
-- **30+ careers** mapped with real salary data, growth outlook, and certifications
-- **Skill gap analysis** per recommended career
-- **Why this career?** plain-English explanation per result
-- **Radar chart** of your personal profile
-- **Salary comparison chart** and confidence bar chart
-- **JSON export** of your full results report
+- **Frontend**: React 18, Vite, Three.js (Fiber/Drei), Framer Motion, Lucide Icons.
+- **Backend**: FastAPI (Python 3.10+), Uvicorn, Pydantic.
+- **ML Engine**: Scikit-Learn (RandomForest, GradientBoosting, SVM), Pandas, NumPy.
+- **Styling**: Vanilla CSS with glassmorphism and dark mode support.
 
-## Quick Start
+## ✨ Key Features
 
+- **Advanced Assessment**: Multi-step questionnaire across 5 core dimensions.
+- **Ensemble ML Model**: High-accuracy predictions using a soft-voting classifier.
+- **Interactive Results**:
+  - **3D Career Showcase**: Immersive 3D visualization of top matches.
+  - **Analytics Dashboard**: Radar charts, confidence bars, and salary comparisons.
+  - **Career Explorer**: Searchable database of 130+ mapped careers.
+  - **AI Career Mentor**: Real-time advice on roadmaps, skills, and salaries.
+- **Professional Reports**: Export results to high-quality PDF or JSON formats.
+
+## 🛠️ Quick Start
+
+### 1. Prerequisites
+- Python 3.10+
+- Node.js 18+
+
+### 2. Backend Setup
 ```bash
-# 1. Clone
-git clone https://github.com/mohitma2o/career_finder_app.git
-cd career_finder_app
-
-# 2. Create virtual environment
+# Create and activate virtual environment
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1     # Windows
-source .venv/bin/activate         # Mac/Linux
+.\.venv\Scripts\Activate.ps1 # Windows
+source .venv/bin/activate    # Mac/Linux
 
-# 3. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 4. Run
-streamlit run app.py
+# Run the server
+python -m uvicorn backend.main:app --reload
 ```
 
-The model trains automatically on first run (~30 seconds). Subsequent runs load from cache.
+### 3. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## File Structure
+The application will be available at `http://localhost:5173`.
+
+## 📁 File Structure
 
 ```
 career_finder_app/
-├── app.py              # Streamlit UI (multi-step wizard + results)
-├── ml_model.py         # Ensemble model, training, prediction, SHAP-style explanations
-├── questionnaire.py    # Question definitions for all 5 sections
-├── careers_data.csv    # 30+ careers with salary, skills, certifications
-├── requirements.txt    # Dependencies
+├── backend/            # FastAPI implementation & routes
+├── frontend/           # React application (Vite-based)
+├── ml_model.py         # ML pipeline and training logic
+├── questionnaire.py    # Assessment definitions
+├── careers_data.csv    # Knowledge base (130+ careers)
 └── README.md
 ```
 
-## How It Works
+## 🧠 How It Works
 
-1. User answers 25 questions across 5 sections
-2. Responses are encoded into a numeric feature vector (25 dimensions)
-3. Ensemble model (RF + GB + SVM) predicts career probabilities
-4. Top 5 careers returned with confidence %, salary, growth, skill gaps, and reasoning
+1. **Data Ingestion**: The system processes a 25-point profile from the user.
+2. **Feature Engineering**: Encodes academic, skill, and interest parameters.
+3. **Inference**: The ensemble model calculates probabilities across 30+ career clusters.
+4. **Contextual Enrichment**: Matches top predictions with market data (Salary, Growth, Skills).
+5. **Guidance**: The AI Mentor provides specific roadmap steps based on results.
 
-## Model Details
+## 🎯 Objectives
 
-- **Algorithm**: VotingClassifier (RandomForest + GradientBoosting + SVM)
-- **Training data**: 3,000 synthetic samples generated from career-specific feature signatures
-- **Features**: 25 (academic, skills, interests, work prefs, personality)
-- **Careers**: 31 mapped categories across Technology, Healthcare, Engineering, Finance, Arts, Law, Science
-
-## Objectives
-
-- Develop an AI-based career recommendation system for students
-- Analyze academic performance, skills, interests, and personality traits
-- Apply supervised machine learning for accurate predictions
-- Design a user-friendly interface with confidence scores
-- Support informed career decisions through data-driven insights
+- **Precision Matching**: Leverage supervised ML for high-confidence career alignment.
+- **Professional UX**: Clean, emoji-free (in core data), premium aesthetic.
+- **Actionable Insights**: Provide clear roadmaps and free learning resources for every path.

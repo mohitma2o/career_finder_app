@@ -13,17 +13,28 @@ export default function QuizPage({ onResults }) {
   const [sections, setSections] = useState([]);
   const [sectionIdx, setSectionIdx] = useState(0);
   const [responses, setResponses] = useState(() => {
-    const saved = localStorage.getItem("cf_responses");
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem("cf_responses");
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      console.error("Failed to parse responses from localStorage:", e);
+      return {};
+    }
   });
   const [loading, setLoading] = useState(true);
   const [predicting, setPredicting] = useState(false);
 
   useEffect(() => {
-    getQuestionnaire().then((data) => {
-      setSections(data.sections);
-      setLoading(false);
-    });
+    getQuestionnaire()
+      .then((data) => {
+        const qSections = data.sections || data || [];
+        setSections(qSections);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch questionnaire:", err);
+        setLoading(false);
+      });
   }, []);
 
   // Persist responses to localStorage on every update
@@ -55,11 +66,12 @@ export default function QuizPage({ onResults }) {
       setPredicting(true);
       try {
         const data = await predict(responses, 5);
-        const results = data.predictions;
+        const results = data; // API returns the list directly
         localStorage.setItem("cf_results", JSON.stringify(results));
         onResults(results);
         navigate("/results");
       } catch (err) {
+
         alert("Prediction failed: " + err.message);
       } finally {
         setPredicting(false);

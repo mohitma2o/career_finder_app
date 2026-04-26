@@ -104,7 +104,9 @@ export default function ExplorerPage() {
       ) : (
         <div className="grid-2">
           {careers.map((c) => {
-            const resources = (c.free_resources || "").split(",").map((s) => s.trim()).filter(Boolean);
+            const resources = Array.isArray(c.free_resources) 
+              ? c.free_resources 
+              : (typeof c.free_resources === "string" ? c.free_resources.split(",").map((s) => s.trim()).filter(Boolean) : []);
             return (
               <div key={c.career} className="card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>

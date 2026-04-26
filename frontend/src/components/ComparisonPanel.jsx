@@ -15,13 +15,15 @@ export default function ComparisonPanel({ career1, career2 }) {
 
   let verdict;
   if (gap1 < gap2) {
-    verdict = `Based on your inputs, ${career1.career} requires less upskilling and aligns more naturally with your current profile.`;
+    verdict = `Based on your inputs, ${(career1 && career1.career) || "this career"} requires less upskilling and aligns more naturally with your current profile.`;
   } else if (gap2 < gap1) {
-    verdict = `Based on your inputs, ${career2.career} requires less upskilling and aligns more naturally with your current profile.`;
-  } else if (career1.confidence >= career2.confidence) {
+    verdict = `Based on your inputs, ${(career2 && career2.career) || "this career"} requires less upskilling and aligns more naturally with your current profile.`;
+  } else if (career1 && career2 && career1.confidence >= career2.confidence) {
     verdict = `Both careers require similar effort, but ${career1.career} has a higher confidence match.`;
-  } else {
+  } else if (career2) {
     verdict = `Both careers require similar effort, but ${career2.career} has a higher confidence match.`;
+  } else {
+    verdict = "Both careers are equally recommended based on your profile.";
   }
 
   return (
@@ -41,7 +43,7 @@ export default function ComparisonPanel({ career1, career2 }) {
 function ComparisonCard({ career, gap, strengths, weaknesses }) {
   const skills = Array.isArray(career.key_skills)
     ? career.key_skills
-    : (career.key_skills || "").split(",").map((s) => s.trim());
+    : (typeof career.key_skills === "string" ? career.key_skills.split(",").map((s) => s.trim()) : []);
 
   return (
     <div className="stat-box" style={{ textAlign: "left" }}>

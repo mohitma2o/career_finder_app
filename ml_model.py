@@ -218,7 +218,7 @@ def train_model():
     joblib.dump(le, ENCODER_PATH)
     joblib.dump(scaler, SCALER_PATH)
 
-    print(f"✅ Model trained — accuracy: {acc:.2%}")
+    print(f"Model trained — accuracy: {acc:.2%}")
     return ensemble, le, scaler, acc, report
 
 
@@ -270,14 +270,15 @@ def predict_careers(responses: dict, top_n: int = 5) -> list[dict]:
             "growth": row.get("growth_outlook", ""),
             "min_education": row.get("min_education", ""),
             "description": row.get("description", ""),
-            "key_skills": row.get("key_skills", "").split(","),
-            "certifications": row.get("top_certifications", "").split(","),
-            "work_env": row.get("work_environment", ""),
+            "key_skills": [s.strip() for s in row.get("key_skills", "").split(",") if s.strip()],
+            "top_certifications": [s.strip() for s in row.get("top_certifications", "").split(",") if s.strip()],
+            "work_environment": row.get("work_environment", ""),
             "roadmap": row.get("roadmap", ""),
             "free_resources": row.get("free_resources", ""),
             "skill_gaps": skill_gap,
             "why": why,
         })
+
 
     return results
 
@@ -357,18 +358,6 @@ def _generate_why(responses: dict, career: str) -> str:
     trades_careers = ["Electrician", "Plumber", "Carpenter"]
     creative_careers = ["UI/UX Designer", "Graphic Designer", "Architect", "Content Writer", "Musician", "Photographer", "Chef"]
 
-    if career in tech_careers:
-        if prog >= 7:
-            reasons.append("your strong programming skills")
-        if tech >= 7:
-            reasons.append("your passion for technology")
-        if anal >= 7:
-            reasons.append("your analytical thinking")
-    elif career in creative_careers:
-        if creat >= 7:
-            reasons.append("your creative abilities")
-        if arts >= 7:
-            reasons.append("your interest in arts and design")
     if career in tech_careers:
         if prog >= 7:
             reasons.append("your strong programming skills")

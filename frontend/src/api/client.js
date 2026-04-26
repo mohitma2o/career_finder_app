@@ -52,3 +52,11 @@ export async function exportPdf(results, responses) {
   if (!res.ok) throw new Error("PDF export failed");
   return res.blob();
 }
+
+export async function chatWithMentor(message, careerContext = null) {
+  const res = await request("/chat", {
+    method: "POST",
+    body: JSON.stringify({ message, career_context: careerContext }),
+  });
+  return res.json();
+}
