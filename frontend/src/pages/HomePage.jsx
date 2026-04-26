@@ -95,12 +95,8 @@ export default function HomePage() {
               }}
             >
               <div style={{ 
-                display: "flex", gap: "6rem", maxWidth: "1100px", alignItems: "center", padding: "4rem",
-                background: "transparent", // Fully Transparent as requested
-                backdropFilter: "blur(10px)", 
-                borderRadius: "3rem", 
-                border: "1px solid rgba(255,255,255,0.05)",
-                boxShadow: "0 40px 100px rgba(0,0,0,0.2)"
+                display: "flex", gap: "6rem", maxWidth: "1200px", alignItems: "center", padding: "2rem",
+                background: "transparent"
               }}>
                 <div style={{ flex: 1.2 }}>
                   <h2 style={{ fontSize: "5rem", marginBottom: "2rem", lineHeight: 1, fontWeight: 900, color: "white" }}>
@@ -140,11 +136,8 @@ export default function HomePage() {
               }}
             >
               <div style={{ 
-                textAlign: "center", maxWidth: "1000px", padding: "6rem 4rem",
-                background: "transparent", // Fully Transparent as requested
-                backdropFilter: "blur(5px)", 
-                borderRadius: "4rem", 
-                border: "1px solid rgba(255,255,255,0.03)"
+                textAlign: "center", maxWidth: "1000px", padding: "2rem",
+                background: "transparent"
               }}>
                 <h2 style={{ fontSize: "clamp(3.5rem, 10vw, 7rem)", marginBottom: "3rem", lineHeight: 1, fontWeight: 900, color: "white" }}>
                   Your <span style={{ color: "var(--accent)" }}>Future</span> Starts Now.
