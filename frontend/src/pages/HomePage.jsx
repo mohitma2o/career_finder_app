@@ -42,7 +42,7 @@ export default function HomePage() {
     <div ref={containerRef} style={{ height: "300vh", position: "relative", background: "transparent" }}>
       <InteractiveBackground />
       
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 10, pointerEvents: "none" }}>
+      <div style={{ position: "fixed", top: 0, left: "var(--sidebar-w)", width: "calc(100% - var(--sidebar-w))", height: "100%", zIndex: 10, pointerEvents: "none" }}>
         <AnimatePresence mode="wait">
           {activeStage === 1 && (
             <motion.div
@@ -95,7 +95,7 @@ export default function HomePage() {
               }}
             >
               <div style={{ 
-                display: "flex", gap: "6rem", maxWidth: "1200px", alignItems: "center", padding: "2rem",
+                display: "flex", gap: "4rem", maxWidth: "1200px", alignItems: "center", padding: "2rem",
                 background: "transparent"
               }}>
                 <div style={{ flex: 1.2 }}>
