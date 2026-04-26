@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getCareers } from "../api/client";
+import ThreeCanvas from "../components/ThreeCanvas";
+import { Sparkles } from "@react-three/drei";
 
 /**
  * Career explorer page.
@@ -37,6 +39,54 @@ export default function ExplorerPage() {
 
   return (
     <div className="fade-up">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ marginBottom: "0.25rem" }}>Industry Constellation</h2>
+          <p style={{ color: "var(--text-muted)", margin: 0 }}>
+            Interactive map of career connections and industry clusters.
+          </p>
+        </div>
+        <div style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem' }}>
+          {count} MAPPED PATHWAYS
+        </div>
+      </div>
+
+      {/* 3D Constellation View */}
+      <div style={{ 
+        height: '400px', 
+        width: '100%', 
+        marginBottom: '2rem', 
+        borderRadius: '2rem', 
+        overflow: 'hidden',
+        background: 'rgba(0,0,0,0.2)',
+        border: '1px solid rgba(255,255,255,0.05)',
+        position: 'relative'
+      }}>
+        <ThreeCanvas>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          {categories.slice(0, 15).map((cat, i) => {
+            const angle = (i / 15) * Math.PI * 2;
+            const r = 4;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            const z = (Math.random() - 0.5) * 2;
+            return (
+              <group key={cat} position={[x, y, z]}>
+                <mesh>
+                  <sphereGeometry args={[0.2, 16, 16]} />
+                  <meshStandardMaterial color="var(--accent)" emissive="var(--accent)" emissiveIntensity={2} />
+                </mesh>
+                <Sparkles count={10} scale={1} size={2} speed={0.5} color="var(--accent)" />
+              </group>
+            );
+          })}
+        </ThreeCanvas>
+        <div style={{ position: 'absolute', bottom: '1rem', right: '1rem', pointerEvents: 'none', opacity: 0.5, fontSize: '0.7rem', color: 'white' }}>
+          SCROLL TO FILTER LIST BELOW
+        </div>
+      </div>
+
       <h2 style={{ marginBottom: "0.25rem" }}>Career Database</h2>
       <p style={{ color: "var(--text-muted)", marginBottom: "1.5rem" }}>
         Browse and filter the full knowledge base of mapped careers.

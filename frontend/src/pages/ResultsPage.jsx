@@ -57,7 +57,79 @@ export default function ResultsPage({ results, responses, onReset }) {
   }
 
   const top = results[0];
-  const tabs = ["Recommendations", "Analytics", "Compare", "Export"];
+  const tabs = ["Recommendations", "Analytics", "Resume", "Interview Prep", "Compare", "Export"];
+
+  // Resume Template Generator
+  const resumeTemplate = useMemo(() => {
+    if (!top) return "";
+    const skills = Array.isArray(top.key_skills) ? top.key_skills : (top.key_skills || "").split(",");
+    const certs = Array.isArray(top.top_certifications) ? top.top_certifications : (top.top_certifications || "").split(",");
+    const roadmap = (top.roadmap || "").split(/[→\u2014-]/).map(s => s.trim()).filter(Boolean);
+    
+    return `
+[FULL NAME]
+[City, State] | [Phone Number] | [Email Address]
+[LinkedIn Profile URL] | [Portfolio/GitHub/Professional Site]
+
+EXECUTIVE SUMMARY
+Highly analytical and results-driven professional transitioning into a ${top.career} role with a focus on ${top.category}. Expert at leveraging ${skills[0]} and ${skills[1]} to solve complex organizational challenges. Proven track record of operational excellence and ${top.category.toLowerCase()} innovation. Committed to delivering high-performance solutions and driving measurable business growth through ${skills.slice(0, 3).join(", ")}.
+
+CORE COMPETENCIES & ATS KEYWORDS
+${skills.map(s => `• ${s.trim().padEnd(30)} | Specialized in ${top.category}`).join("\n")}
+
+SELECTED KEY ACHIEVEMENTS (Quantified Impact)
+• Optimized [Process/System] using ${skills[0]}, resulting in a [X]% increase in efficiency over [Timeframe].
+• Engineered a [Project Name] that reduced operational costs by $[Amount] annually through ${skills[1]} implementation.
+• Orchestrated a multi-phase transition to ${roadmap[0] || 'modern industry standards'}, impacting [Number] users/stakeholders.
+• Recognized for [Specific Award/Achievement] in ${top.category}, demonstrating leadership and technical mastery.
+
+TARGETED PROFESSIONAL DEVELOPMENT
+${certs.map(c => `• Candidate for ${c.trim()} (Expected completion: [Date])`).join("\n")}
+• Continuous Upskilling: Actively mastering ${roadmap[1] || 'advanced field methodologies'} and ${skills[2] || 'emerging technologies'}.
+
+STRATEGIC CAREER TRAJECTORY
+• Phase 1: High-impact contribution as a ${top.career}, focusing on ${skills[0]} mastery.
+• Phase 2: Leading ${top.category} initiatives and mentoring junior teams in ${skills[1]} best practices.
+
+EDUCATION
+[Degree Name] | [University Name]
+• Relevant Honors: [GPA if >3.5], [Dean's List], [Scholarships]
+
+TECHNICAL TOOLS & STACK
+[Tool 1] | [Tool 2] | [Tool 3] | [Tool 4]
+    `.trim();
+  }, [top]);
+
+  // Interview Questions Generator
+  const interviewQuestions = useMemo(() => {
+    if (!top) return [];
+    const skills = Array.isArray(top.key_skills) ? top.key_skills : (top.key_skills || "").split(",");
+    
+    return [
+      // BEHAVIORAL
+      { q: "Tell me about a time you had to learn a complex new skill quickly.", a: `Focus on your transition into ${top.career}. Mention specific tools like ${skills[0]} and your methodical approach to learning.` },
+      { q: "How do you handle disagreements within a technical or creative team?", a: "Emphasize communication, data-driven decisions, and maintaining focus on the project goals." },
+      { q: "Describe a project where you failed. What did you learn?", a: `Choose a real example, take responsibility, and show how that experience made you a better candidate for ${top.category}.` },
+      { q: "What is your greatest professional achievement so far?", a: "Quantify your result. Use the metrics mentioned in your Smart Resume Template." },
+      
+      // CAREER-SPECIFIC
+      { q: `Why are you interested in becoming a ${top.career}?`, a: `Align your personal values with the industry impact. Mention your affinity for ${top.category}.` },
+      { q: `What do you think is the biggest challenge in ${top.category} today?`, a: `Discuss current industry shifts, such as AI automation or sustainability requirements.` },
+      { q: `How do you stay updated with the latest trends in ${top.career}?`, a: `Mention specific newsletters, communities, or the certifications you are currently pursuing.` },
+      { q: "What unique perspective do you bring from your previous background?", a: `Highlight your 'transferable skills' and how they complement the technical needs of ${top.category}.` },
+      
+      // TECHNICAL / DOMAIN
+      { q: `How would you explain the importance of ${skills[0]} to a non-technical person?`, a: "Use a simple analogy. Focus on the 'Why' (business value) rather than the 'How' (technicality)." },
+      { q: `In your opinion, what is the most critical tool for a ${top.career} today?`, a: `Likely ${skills[1]} or similar. Explain how it streamlines the workflow in ${top.category}.` },
+      { q: "Walk me through your process for solving a complex problem.", a: `Use the STAR method (Situation, Task, Action, Result) applied to a ${top.category} scenario.` },
+      { q: "How do you ensure the quality and accuracy of your work?", a: `Mention peer reviews, testing frameworks, or specific validation techniques used in ${top.category}.` },
+      
+      // CLOSING / STRATEGIC
+      { q: "Do you have any questions for us?", a: `Ask about the team's biggest challenge, the company's 5-year vision for ${top.category}, or their mentorship program.` },
+      { q: "What is your preferred work environment/culture?", a: `Show flexibility but emphasize your need for growth, which is why you chose the ${top.career} path.` },
+      { q: "How do you handle tight deadlines and high-pressure situations?", a: `Discuss prioritization techniques and your ability to remain focused on core ${top.category} objectives.` }
+    ];
+  }, [top]);
 
   // Radar data
   const radarLabels = ["Tech", "Science", "Business", "Arts", "Social", "Nature", "Analytical", "Creative", "Leadership", "Competitive"];
@@ -192,6 +264,79 @@ export default function ResultsPage({ results, responses, onReset }) {
       )}
 
       {activeTab === 2 && (
+        <div className="fade-up">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div>
+              <h3 style={{ margin: 0 }}>Smart Resume Template</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>AI-generated foundation based on your top match.</p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn" onClick={() => {
+                const element = document.createElement("a");
+                const file = new Blob([resumeTemplate], {type: 'text/plain'});
+                element.href = URL.createObjectURL(file);
+                element.download = "career_resume_template.txt";
+                document.body.appendChild(element);
+                element.click();
+              }}>Download .TXT</button>
+              <button className="btn btn-primary" onClick={() => {
+                navigator.clipboard.writeText(resumeTemplate);
+                alert("Resume template copied to clipboard!");
+              }}>Copy to Clipboard</button>
+            </div>
+          </div>
+          <div style={{ 
+            background: 'white', 
+            color: '#1a1a1a',
+            padding: '4rem', 
+            borderRadius: '4px', 
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+            whiteSpace: 'pre-wrap',
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '0.9rem',
+            lineHeight: '1.5',
+            maxWidth: '850px',
+            margin: '0 auto',
+            border: '1px solid #ddd',
+            minHeight: '800px',
+            position: 'relative'
+          }}>
+            {/* Watermark/Logo for professional feel */}
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '0.6rem', color: '#ccc', letterSpacing: '2px' }}>CAREER FINDER AI / TEMPLATE</div>
+            {resumeTemplate}
+          </div>
+          <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            💡 Tip: Open this in any text editor and fill in the bracketed [ ] sections to finish your resume.
+          </p>
+        </div>
+      )}
+
+      {activeTab === 3 && (
+        <div className="fade-up">
+          <h3 style={{ marginBottom: '1.5rem' }}>Interview Preparation Flashcards</h3>
+          <div style={{ display: 'grid', gap: '1.5rem' }}>
+            {interviewQuestions.map((iq, i) => (
+              <details key={i} className="card" style={{ 
+                padding: '1.5rem', 
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid var(--border)',
+                borderRadius: '1rem',
+                cursor: 'pointer'
+              }}>
+                <summary style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--accent)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {iq.q}
+                  <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>View Sample Answer</span>
+                </summary>
+                <p style={{ marginTop: '1rem', color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '1rem' }}>
+                  {iq.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 4 && (
         <div>
           <h3 style={{ marginBottom: "1rem" }}>Side-by-Side Comparison</h3>
           <div className="grid-2" style={{ marginBottom: "1.5rem" }}>
@@ -216,7 +361,7 @@ export default function ResultsPage({ results, responses, onReset }) {
         </div>
       )}
 
-      {activeTab === 3 && (
+      {activeTab === 5 && (
         <div>
           <h3 style={{ marginBottom: "0.5rem" }}>Export Your Data</h3>
           <p style={{ color: "var(--text-muted)", marginBottom: "1.5rem" }}>

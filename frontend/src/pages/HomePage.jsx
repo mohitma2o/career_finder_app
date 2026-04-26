@@ -118,6 +118,18 @@ export default function HomePage() {
                       <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{item.desc}</p>
                     </div>
                   ))}
+                  
+                  {/* Community Trends */}
+                  <div style={{ marginTop: '1rem', padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem' }}>
+                      <TrendingUp size={16} /> TRENDING THIS WEEK
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <span className="tag" style={{ background: 'rgba(129,140,248,0.1)' }}>#AI_Engineering</span>
+                      <span className="tag" style={{ background: 'rgba(129,140,248,0.1)' }}>#Data_Sustainability</span>
+                      <span className="tag" style={{ background: 'rgba(129,140,248,0.1)' }}>#Remote_Leadership</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>

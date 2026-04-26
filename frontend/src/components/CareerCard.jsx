@@ -55,10 +55,17 @@ export default function CareerCard({ career, rank }) {
             </p>
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
            <div className="tag tag-accent" style={{ fontSize: '1rem', padding: '6px 14px' }}>
              {career.confidence}% Match
            </div>
+           <button 
+             className="btn btn-glow" 
+             style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px' }}
+             onClick={() => window.location.href = `/skill-test?career=${encodeURIComponent(career.career)}`}
+           >
+             🎯 Test Your Skills
+           </button>
         </div>
       </div>
 
