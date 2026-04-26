@@ -11,6 +11,7 @@ export default function Sidebar({ hasResults }) {
     { to: "/", label: "Home", icon: HomeIcon },
     { to: "/quiz", label: "Assessment", icon: ClipboardIcon },
     { to: "/explore", label: "Database", icon: SearchIcon },
+    { to: "/history", label: "History", icon: HistoryIcon },
   ];
 
   if (hasResults) {
@@ -73,6 +74,16 @@ function ChartIcon() {
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 8v4l3 3" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
     </svg>
   );
 }

@@ -19,6 +19,29 @@ export default function ResultsPage({ results, responses, onReset }) {
   const [sel1, setSel1] = useState(0);
   const [sel2, setSel2] = useState(1);
 
+  // Save to history on mount
+  useState(() => {
+    if (results && results.length) {
+      const history = JSON.parse(localStorage.getItem("cf_history") || "[]");
+      const currentId = btoa(new Date().toISOString()).slice(0, 8);
+      
+      // Prevent duplicates by checking the top recommendation and time
+      const lastEntry = history[0];
+      const isDuplicate = lastEntry && lastEntry.results[0].career === results[0].career && 
+                          (new Date() - new Date(lastEntry.timestamp)) < 60000;
+
+      if (!isDuplicate) {
+        const newEntry = {
+          id: currentId,
+          timestamp: new Date().toISOString(),
+          results: results,
+          responses: responses
+        };
+        localStorage.setItem("cf_history", JSON.stringify([newEntry, ...history].slice(0, 10)));
+      }
+    }
+  });
+
   if (!results || !results.length) {
     return (
       <div className="fade-up">

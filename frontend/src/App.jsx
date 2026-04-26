@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
 import ExplorerPage from "./pages/ExplorerPage";
+import HistoryPage from "./pages/HistoryPage";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import ThreeCanvas from "./components/ThreeCanvas";
 import LandingScene from "./components/LandingScene";
@@ -48,6 +49,13 @@ export default function App() {
     setResponses({});
   };
 
+  const handleRestore = (hResults, hResponses) => {
+    setResults(hResults);
+    setResponses(hResponses);
+    localStorage.setItem("cf_results", JSON.stringify(hResults));
+    localStorage.setItem("cf_responses", JSON.stringify(hResponses));
+  };
+
   return (
     <ThemeProvider>
       <div ref={containerRef} className="app-container" style={{ position: 'relative', minHeight: '100vh', background: '#000' }}>
@@ -82,6 +90,7 @@ export default function App() {
               <Route path="/quiz" element={<QuizPage onResults={handleResults} />} />
               <Route path="/results" element={<ResultsPage results={results} responses={responses} onReset={handleReset} />} />
               <Route path="/explore" element={<ExplorerPage />} />
+              <Route path="/history" element={<HistoryPage onRestore={handleRestore} />} />
             </Routes>
           </main>
         </div>

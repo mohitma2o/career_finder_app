@@ -140,7 +140,9 @@ export default function CareerCard({ career, rank }) {
             const x = Math.cos(angle) * 100;
             const y = Math.sin(angle) * 80;
             return (
-              <div key={skill} style={{ 
+              <div key={skill} 
+                onClick={() => window.open(`https://www.youtube.com/results?search_query=learn+${encodeURIComponent(skill)}+for+${encodeURIComponent(career.career)}`, '_blank')}
+                style={{ 
                 position: 'absolute',
                 transform: `translate(${x}px, ${y}px)`,
                 padding: '6px 12px',
@@ -151,7 +153,7 @@ export default function CareerCard({ career, rank }) {
                 color: 'var(--text-muted)',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.3s ease',
-                cursor: 'default'
+                cursor: 'pointer'
               }}
               onMouseEnter={(e) => {
                 e.target.style.background = 'rgba(129, 140, 248, 0.1)';
@@ -163,6 +165,7 @@ export default function CareerCard({ career, rank }) {
                 e.target.style.borderColor = 'rgba(255,255,255,0.1)';
                 e.target.style.color = 'var(--text-muted)';
               }}
+              title="Click to find learning resources"
               >
                 {skill}
               </div>
@@ -201,9 +204,16 @@ export default function CareerCard({ career, rank }) {
                   border: '3px solid var(--accent)',
                   zIndex: 1
                 }} />
-                <p style={{ fontSize: '0.95rem', color: 'var(--text)', margin: 0 }}>
-                  <strong style={{ color: 'var(--accent)', marginRight: '8px' }}>Step {i + 1}:</strong> {step}
-                </p>
+                <div 
+                  onClick={() => window.open(`https://www.google.com/search?q=how+to+${encodeURIComponent(step)}+for+${encodeURIComponent(career.career)}`, '_blank')}
+                  style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateX(10px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0px)'}
+                >
+                  <p style={{ fontSize: '0.95rem', color: 'var(--text)', margin: 0 }}>
+                    <strong style={{ color: 'var(--accent)', marginRight: '8px' }}>Step {i + 1}:</strong> {step}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -216,7 +226,10 @@ export default function CareerCard({ career, rank }) {
           <h4 style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Recommended Free Learning</h4>
           <div className="grid-2">
             {resources.map((r, i) => (
-              <div key={i} className="btn-glow" style={{ 
+              <div key={i} 
+                className="btn-glow" 
+                onClick={() => window.open(`https://www.google.com/search?q=free+course+${encodeURIComponent(r)}`, '_blank')}
+                style={{ 
                 padding: '1rem', 
                 borderRadius: '0.75rem', 
                 background: 'rgba(255,255,255,0.03)', 
@@ -224,7 +237,8 @@ export default function CareerCard({ career, rank }) {
                 fontSize: '0.9rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px'
+                gap: '10px',
+                cursor: 'pointer'
               }}>
                 <span style={{ color: 'var(--accent)' }}>✦</span> {r}
               </div>
