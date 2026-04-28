@@ -339,41 +339,82 @@ async def career_mentor_chat(request: ChatRequest):
     msg = request.message.lower()
     df = load_careers_df()
     
-    # Search context
-    context_career = None
-    if request.career_context:
+    # 1. Identify Career Focus (Message takes precedence over context)
+    career_focus = None
+    
+    # Try to find a career mentioned in the message (simple keyword match first)
+    for _, row in df.iterrows():
+        c_name = str(row["career"]).lower()
+        if c_name in msg:
+            career_focus = row.to_dict()
+            break
+            
+    # If not in message, use context
+    if not career_focus and request.career_context:
         match = df[df["career"].str.lower() == request.career_context.lower()]
         if not match.empty:
-            context_career = match.iloc[0].to_dict()
+            career_focus = match.iloc[0].to_dict()
 
+    # 2. Try Gemini AI for premium response
+    if model and GEMINI_API_KEY and "your_actual_key_here" not in GEMINI_API_KEY:
+        try:
+            # Provide specific context if we have a career focus
+            context_str = ""
+            if career_focus:
+                context_str = f"""
+                You are talking about the career: {career_focus['career']}.
+                Details from our database:
+                - Category: {career_focus.get('category', 'N/A')}
+                - Description: {career_focus.get('description', 'N/A')}
+                - Average Salary (INR): {career_focus.get('avg_salary_inr', 'N/A')}
+                - Roadmap: {career_focus.get('roadmap', 'N/A')}
+                - Key Skills: {career_focus.get('key_skills', 'N/A')}
+                - Resources: {career_focus.get('free_resources', 'N/A')}
+                """
+            
+            prompt = f"""
+            You are a world-class AI Career Mentor. 
+            User message: "{request.message}"
+            {context_str}
+            
+            Guidelines:
+            - If the user asks for salary, use the database values provided above if available.
+            - If they ask for a roadmap, provide a detailed, encouraging explanation based on the database 'Roadmap' field.
+            - If they ask about a different career than the context, and it's in our list, switch focus gracefully.
+            - Keep responses professional, highly encouraging, and insightful.
+            - Use markdown formatting for readability (bolding, lists).
+            - If the career is not in our database, answer generally based on your knowledge but mention our database covers 250+ roles.
+            """
+            
+            response = model.generate_content(prompt)
+            if response and response.text:
+                return {"response": response.text.strip()}
+        except Exception as e:
+            print(f"Chat Gemini Error: {e}")
+
+    # 3. Fallback Logic (Improved)
     if "hello" in msg or "hi" in msg:
-        response = "Greetings! I am your AI Career Mentor. I've analyzed your potential. What would you like to know about your future path?"
+        return {"response": "Greetings! I am your AI Career Mentor. I've analyzed your potential. What would you like to know about your future path?"}
     
-    elif "salary" in msg or "pay" in msg:
-        if context_career:
-            sal = context_career.get("avg_salary_inr", 0)
-            response = f"As an {context_career['career']}, you can expect an average salary of around INR {sal:,}. Does that align with your goals?"
-        else:
-            response = "Salaries vary greatly by role. For example, Tech roles often start at 12L+ while Finance roles can go much higher. Which career interests you?"
+    if "salary" in msg or "pay" in msg:
+        if career_focus:
+            sal = career_focus.get("avg_salary_inr", 0)
+            return {"response": f"As a **{career_focus['career']}**, you can expect an average salary of around **INR {sal:,}**. Does this align with your financial goals?"}
+        return {"response": "Salaries vary by role. Tech roles often start at 12L+ while Finance can go higher. Which specific career are you curious about?"}
 
-    elif "roadmap" in msg or "how to" in msg or "steps" in msg:
-        if context_career:
-            steps = context_career.get("roadmap", "Follow a specialized degree path and build projects.")
-            response = f"To become an {context_career['career']}, here is your path: {steps}. Would you like to see specific free resources for this?"
-        else:
-            response = "Most paths start with a relevant degree followed by certifications. Tell me which career you're looking at!"
+    if "roadmap" in msg or "how to" in msg or "steps" in msg:
+        if career_focus:
+            steps = career_focus.get("roadmap", "Follow a specialized degree path and build projects.")
+            return {"response": f"To become a **{career_focus['career']}**, here is your proven path: {steps}. \n\nWould you like to see specific free resources to start today?"}
+        return {"response": "Most professional paths start with a relevant degree followed by specialized certifications. Tell me which career interests you!"}
 
-    elif "skill" in msg or "learn" in msg:
-        if context_career:
-            skills = context_career.get("key_skills", "Various technical skills")
-            response = f"Focus on mastering: {skills}. These are high-demand competencies for an {context_career['career']}."
-        else:
-            response = "I recommend focusing on 'Power Skills': Analytics, Communication, and specialized technical tools. What's your background?"
+    if "skill" in msg or "learn" in msg:
+        if career_focus:
+            skills = career_focus.get("key_skills", "relevant technical skills")
+            return {"response": f"Mastering **{skills}** will make you highly competitive as a **{career_focus['career']}**. Should I suggest some resources for these?"}
+        return {"response": "I recommend focusing on high-demand skills like Data Analysis, Project Management, or specialized technical tools. What is your current background?"}
 
-    else:
-        response = "That's an interesting question. In our database, I see growing demand for roles that blend creativity and technology. Tell me more about your interests!"
-
-    return {"response": response}
+    return {"response": "That's an interesting question! Based on my data, there's growing demand for roles that blend specialized knowledge with digital tools. Tell me more about your interests so I can guide you better."}
 
 @router.get("/skill-test-questions")
 async def get_skill_test_questions(career: str):
