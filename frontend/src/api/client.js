@@ -8,10 +8,21 @@ const BASE = "/api";
 
 async function request(path, options = {}) {
   const url = `${BASE}${path}`;
+  const token = localStorage.getItem('cf_token');
+  
+  const headers = { 
+    "Content-Type": "application/json", 
+    ...options.headers 
+  };
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   console.log(`[API Request] ${options.method || 'GET'} ${url}`);
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
+    headers
   });
   if (!res.ok) {
     const text = await res.text();

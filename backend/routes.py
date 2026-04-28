@@ -31,6 +31,20 @@ from questionnaire import SECTIONS
 from ml_model import predict_careers
 from .skill_questions import get_questions_for_career
 from .resume_analyzer import analyze_resume
+from .database import SessionLocal, User as DBUser, History as DBHistory, init_db
+from .auth import create_access_token, verify_google_token, get_current_user, is_admin, is_super_admin, ADMIN_EMAIL, SUPER_ADMIN_USER, SUPER_ADMIN_PASS, verify_password, get_password_hash
+from sqlalchemy.orm import Session
+from fastapi import Depends
+
+# Initialize DB on import (or we could do it in main.py lifespan)
+init_db()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 router = APIRouter()
 
@@ -90,12 +104,176 @@ async def get_questionnaire():
     return SECTIONS
 
 @router.post("/predict")
-async def predict(request: PredictRequest):
+async def predict(request: PredictRequest, db: Session = Depends(get_db), token: Optional[str] = None):
     try:
         results = predict_careers(request.responses, top_n=request.top_n)
+        
+        # Save to history if token is provided and valid
+        if token:
+            try:
+                from .auth import get_current_user
+                # get_current_user is a dependency, but we can call its logic here
+                # Or better, use the current_user if we make it a dependency of the route
+                user_info = get_current_user(token)
+                if user_info:
+                    user_username = user_info.get("sub")
+                    user = db.query(DBUser).filter(DBUser.username == user_username).first()
+                    if user:
+                        new_history = DBHistory(
+                            results=results,
+                            responses=request.responses,
+                            user_id=user.id
+                        )
+                        db.add(new_history)
+                        db.commit()
+            except Exception as e:
+                print(f"History Save Error: {e}")
+        
         return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+@router.post("/auth/register")
+async def register(request: LoginRequest, db: Session = Depends(get_db)):
+    existing = db.query(DBUser).filter(DBUser.username == request.username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
+    new_user = DBUser(
+        username=request.username,
+        hashed_password=get_password_hash(request.password),
+        role="user"
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return {"message": "User registered successfully"}
+
+@router.post("/auth/login")
+async def login(request: LoginRequest, db: Session = Depends(get_db)):
+    # 1. Primary Authorization: Super Admin (Mohit) Bypass
+    if request.username == SUPER_ADMIN_USER and request.password == SUPER_ADMIN_PASS:
+        user = db.query(DBUser).filter(DBUser.username == SUPER_ADMIN_USER).first()
+        if not user:
+            # Auto-provision the Super Admin on first successful hit
+            user = DBUser(
+                username=SUPER_ADMIN_USER,
+                hashed_password=get_password_hash(SUPER_ADMIN_PASS),
+                role="super_admin"
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        elif user.role != "super_admin":
+            # Correct role if it was accidentally changed
+            user.role = "super_admin"
+            db.commit()
+        
+        return generate_auth_response(user)
+
+    # 2. Secondary Authorization: Database Credential Verification
+    user = db.query(DBUser).filter(DBUser.username == request.username).first()
+    
+    # Check credentials without leaking existence (Top 1% Security Practice)
+    if not user or not verify_password(request.password, user.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed. Please check your credentials.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return generate_auth_response(user)
+
+def generate_auth_response(user):
+    # Standardized response generator for consistency
+    access_token = create_access_token(data={
+        "sub": user.username, 
+        "role": user.role,
+        "id": user.id
+    })
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "username": user.username,
+            "role": user.role
+        }
+    }
+
+@router.post("/auth/google")
+async def google_login(request: Dict[str, str], db: Session = Depends(get_db)):
+    # ... (Keep this for future if they want it back, but focus on the new one)
+    pass
+
+@router.get("/history")
+async def get_history(db: Session = Depends(get_db)):
+    # Without login, we'll return all history for everyone
+    histories = db.query(DBHistory).order_by(DBHistory.timestamp.desc()).all()
+    results = []
+    for h in histories:
+        owner = db.query(DBUser).filter(DBUser.id == h.user_id).first()
+        h_dict = {
+            "id": h.id,
+            "timestamp": h.timestamp,
+            "results": h.results,
+            "responses": h.responses,
+            "user_username": owner.username if owner else "Anonymous",
+            "user_name": owner.username if owner else "Anonymous"
+        }
+        results.append(h_dict)
+    return results
+
+# --- ADMIN MANAGEMENT ---
+
+class RoleUpdateRequest(BaseModel):
+    username: str
+    role: str
+
+class UserCreateRequest(BaseModel):
+    username: str
+    password: str
+    role: Optional[str] = "admin"
+
+@router.get("/admin/users")
+async def list_users(db: Session = Depends(get_db), _ = Depends(is_super_admin)):
+    users = db.query(DBUser).all()
+    return users
+
+@router.post("/admin/create-admin")
+async def create_admin(request: UserCreateRequest, db: Session = Depends(get_db), _ = Depends(is_super_admin)):
+    existing = db.query(DBUser).filter(DBUser.username == request.username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    new_user = DBUser(
+        username=request.username,
+        hashed_password=get_password_hash(request.password),
+        role=request.role
+    )
+    db.add(new_user)
+    db.commit()
+    return {"message": f"Admin {request.username} created"}
+
+@router.post("/admin/update-role")
+async def update_user_role(request: RoleUpdateRequest, db: Session = Depends(get_db), _ = Depends(is_super_admin)):
+    if request.role not in ["admin", "user"]:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be 'admin' or 'user'")
+    
+    user = db.query(DBUser).filter(DBUser.username == request.username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.username == SUPER_ADMIN_USER:
+        raise HTTPException(status_code=400, detail="Cannot change role of Super Admin")
+        
+    user.role = request.role
+    db.commit()
+    return {"message": f"User {request.username} role updated to {request.role}"}
 
 @router.get("/careers", response_model=CareersResponse)
 async def get_careers(

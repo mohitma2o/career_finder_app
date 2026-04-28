@@ -82,7 +82,7 @@ export default function CareerCard({ career, rank }) {
       }}>
         <div>
           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent)' }}>📈</span> Market Momentum
+            Market Momentum
           </h4>
           <div style={{ height: '8px', width: '100%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
             <div style={{ height: '100%', width: `${demandIndex}%`, background: 'var(--accent)', boxShadow: '0 0 10px var(--accent)' }} />
@@ -93,7 +93,7 @@ export default function CareerCard({ career, rank }) {
         </div>
         <div>
           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent)' }}>💎</span> Top Skills Required
+            Top Skills Required
           </h4>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {skillList.slice(0, 3).map(s => (
@@ -122,8 +122,7 @@ export default function CareerCard({ career, rank }) {
           alignItems: 'flex-start',
           gap: '12px'
         }}>
-          <span style={{ fontSize: '1.2rem' }}>💡</span>
-          <div>
+          <div style={{ flex: 1 }}>
             <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', color: 'var(--accent)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Why this career?
             </h4>
@@ -209,7 +208,7 @@ export default function CareerCard({ career, rank }) {
       {roadmapSteps.length > 0 && (
         <div style={{ marginBottom: '2rem' }}>
           <h4 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent)' }}>🚀</span> Your Roadmap to Success
+            Your Roadmap to Success
           </h4>
           <div style={{ position: 'relative', paddingLeft: '2rem' }}>
             {/* Timeline Line */}

@@ -215,7 +215,7 @@ TECHNICAL TOOLS & STACK
             <h2 style={{ fontSize: '2rem', margin: '0.2rem 0' }}>{top?.career || "Calculating..."}</h2>
             {top?.why && (
               <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--accent)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '1rem' }}>💡</span> {top.why}
+                {top.why}
               </p>
             )}
           </div>
