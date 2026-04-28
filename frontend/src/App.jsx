@@ -8,6 +8,7 @@ import ResultsPage from "./pages/ResultsPage";
 import ExplorerPage from "./pages/ExplorerPage";
 import HistoryPage from "./pages/HistoryPage";
 import SkillTestPage from "./pages/SkillTestPage";
+import ResumeMakerPage from "./pages/ResumeMakerPage";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import ThreeCanvas from "./components/ThreeCanvas";
 import LandingScene from "./components/LandingScene";
@@ -93,6 +94,7 @@ export default function App() {
               <Route path="/explore" element={<ExplorerPage />} />
               <Route path="/history" element={<HistoryPage onRestore={handleRestore} />} />
               <Route path="/skill-test" element={<SkillTestPage />} />
+              <Route path="/resume-maker" element={<ResumeMakerPage />} />
             </Routes>
           </main>
         </div>

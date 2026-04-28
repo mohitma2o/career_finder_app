@@ -73,6 +73,82 @@ def encode_inputs(responses: dict) -> np.ndarray:
     return np.array(vec).reshape(1, -1)
 
 
+# ── Career feature signatures (for data generation and explainability) ─────────
+CAREER_SIGNATURES = {
+    "Software Engineer":         dict(programming=9, analytical=8, math_comfort=7, interest_technology=9, creativity=5, communication=6, leadership=5, cgpa=72),
+    "Data Scientist":            dict(programming=8, analytical=9, math_comfort=9, interest_technology=9, interest_science=8, cgpa=80),
+    "Machine Learning Engineer": dict(programming=9, analytical=9, math_comfort=9, interest_technology=10, interest_science=8, cgpa=82),
+    "Cybersecurity Analyst":     dict(programming=7, analytical=8, math_comfort=6, interest_technology=9, detail_oriented=8, cgpa=70),
+    "Cloud Architect":           dict(programming=8, analytical=8, interest_technology=9, leadership=7, cgpa=75),
+    "UI/UX Designer":            dict(creativity=9, interest_arts=9, communication=8, interest_technology=6, detail_oriented=7, cgpa=65),
+    "Product Manager":           dict(leadership=9, communication=9, analytical=8, interest_business=9, cgpa=75),
+    "DevOps Engineer":           dict(programming=8, analytical=7, interest_technology=9, detail_oriented=8, cgpa=72),
+    "Business Analyst":          dict(analytical=8, communication=8, interest_business=8, math_comfort=6, cgpa=70),
+    "Doctor (MBBS)":             dict(interest_science=9, interest_social=8, interest_nature=7, patience=9, detail_oriented=9, cgpa=85, stream=6),
+    "Civil Engineer":            dict(math_comfort=8, analytical=8, interest_science=7, detail_oriented=8, cgpa=70, stream=5),
+    "Mechanical Engineer":       dict(math_comfort=8, analytical=8, interest_science=8, creativity=6, cgpa=72, stream=5),
+    "Electrical Engineer":       dict(math_comfort=9, analytical=8, interest_science=8, interest_technology=7, cgpa=74, stream=5),
+    "Chartered Accountant":      dict(math_comfort=8, analytical=8, interest_business=8, detail_oriented=9, cgpa=75, stream=3),
+    "Financial Analyst":         dict(math_comfort=8, analytical=9, interest_business=8, detail_oriented=8, cgpa=76),
+    "Lawyer":                    dict(communication=9, analytical=8, interest_social=7, competitiveness=8, cgpa=72, stream=9),
+    "Graphic Designer":          dict(creativity=10, interest_arts=10, communication=7, interest_technology=5, cgpa=60),
+    "Content Writer":            dict(communication=9, creativity=8, interest_arts=7, analytical=5, cgpa=62),
+    "Digital Marketer":          dict(communication=8, creativity=7, interest_business=8, analytical=7, cgpa=65),
+    "Teacher / Educator":        dict(communication=9, interest_social=9, patience=9, leadership=7, impact_importance=9, cgpa=68),
+    "Research Scientist":        dict(interest_science=10, analytical=9, math_comfort=9, patience=9, detail_oriented=9, cgpa=88),
+    "Architect":                 dict(creativity=9, interest_arts=8, analytical=7, detail_oriented=9, math_comfort=7, cgpa=72),
+    "Psychologist":              dict(interest_social=9, communication=9, patience=9, analytical=7, cgpa=72, stream=4),
+    "Journalist":                dict(communication=10, creativity=8, interest_social=8, risk_tolerance=7, cgpa=65),
+    "Entrepreneur":              dict(leadership=9, risk_tolerance=9, interest_business=10, communication=8, competitiveness=9, cgpa=65),
+    "Game Developer":            dict(programming=9, creativity=9, interest_technology=9, interest_arts=6, cgpa=70),
+    "Biomedical Engineer":       dict(interest_science=8, interest_nature=7, analytical=8, math_comfort=7, cgpa=78, stream=5),
+    "Environmental Scientist":   dict(interest_nature=9, interest_science=8, analytical=7, impact_importance=8, cgpa=72),
+    "HR Manager":                dict(communication=9, interest_social=8, leadership=8, patience=8, cgpa=68),
+    "Operations Manager":        dict(leadership=9, analytical=8, interest_business=8, detail_oriented=7, cgpa=72),
+    "Pharmacist":                dict(interest_science=8, interest_nature=7, detail_oriented=8, patience=7, cgpa=75, stream=6),
+    "Nurse":                     dict(interest_social=9, patience=9, detail_oriented=8, interest_science=8, cgpa=70, stream=6),
+    "Dentist":                   dict(interest_science=9, detail_oriented=9, patience=8, cgpa=80, stream=6),
+    "Physiotherapist":           dict(interest_science=8, interest_social=8, patience=8, cgpa=72, stream=6),
+    "Surgeon":                   dict(interest_science=10, detail_oriented=10, patience=8, analytical=9, cgpa=90, stream=6),
+    "Pilot":                     dict(interest_technology=6, competitiveness=8, risk_tolerance=8, math_comfort=8, cgpa=75),
+    "Air Traffic Controller":    dict(analytical=9, detail_oriented=9, patience=8, communication=8, cgpa=75),
+    "Electrician":               dict(detail_oriented=8, math_comfort=7, interest_technology=6, cgpa=65, stream=5),
+    "Plumber":                   dict(detail_oriented=8, patience=7, cgpa=60),
+    "Carpenter":                 dict(creativity=7, detail_oriented=8, cgpa=60),
+    "Chef":                      dict(creativity=8, patience=7, communication=6, cgpa=62),
+    "Hotel Manager":             dict(leadership=8, communication=9, interest_business=7, cgpa=70),
+    "Sales Manager":             dict(communication=9, leadership=8, competitiveness=8, interest_business=8, cgpa=68),
+    "Investment Banker":         dict(analytical=9, math_comfort=9, leadership=7, competitiveness=9, cgpa=85, stream=3),
+    "Marketing Manager":         dict(communication=9, creativity=8, interest_business=9, leadership=7, cgpa=72),
+    "IAS Officer":               dict(leadership=9, analytical=8, communication=8, impact_importance=9, cgpa=80),
+    "Police Officer":            dict(leadership=8, competitiveness=8, patience=7, physical=8, cgpa=70),
+    "Software Tester":           dict(analytical=8, detail_oriented=9, programming=6, cgpa=70),
+    "Blockchain Developer":      dict(programming=9, analytical=8, math_comfort=8, interest_technology=10, cgpa=78),
+    "Mobile App Developer":      dict(programming=9, creativity=7, interest_technology=9, cgpa=72),
+    "Fitness Trainer":           dict(interest_nature=7, communication=8, patience=8, leadership=6, cgpa=65),
+    "Musician":                  dict(creativity=10, interest_arts=10, patience=8, cgpa=60),
+    "Photographer":              dict(creativity=9, interest_arts=9, detail_oriented=7, cgpa=62),
+    "Social Worker":             dict(interest_social=10, communication=9, patience=9, impact_importance=10, cgpa=70),
+    "Veterinarian":              dict(interest_nature=10, interest_science=9, patience=9, detail_oriented=9, cgpa=85, stream=6),
+    "Web Developer":             dict(programming=8, interest_technology=9, creativity=6, cgpa=68),
+    "Accountant":                dict(analytical=8, math_comfort=8, detail_oriented=9, cgpa=75, stream=3),
+    "Farmer/Agriculturist":      dict(interest_nature=9, patience=8, impact_importance=7, cgpa=65),
+    "Mechanical Designer":       dict(analytical=8, creativity=7, math_comfort=7, detail_oriented=8, cgpa=70, stream=5),
+    "Quality Assurance Manager": dict(analytical=8, detail_oriented=9, leadership=7, cgpa=75),
+    "Data Analyst":              dict(analytical=9, math_comfort=7, programming=6, cgpa=72),
+    "Project Manager":           dict(leadership=8, communication=8, analytical=7, cgpa=75),
+    "AI Prompt Engineer":        dict(communication=9, analytical=8, creativity=9, interest_technology=10, programming=6, cgpa=70),
+    "Web3 Security Auditor":     dict(programming=9, analytical=10, math_comfort=8, detail_oriented=10, interest_technology=10, cgpa=80),
+    "Quantum Software Developer":dict(programming=9, analytical=10, math_comfort=10, interest_science=9, interest_technology=10, cgpa=88),
+    "Generative AI Specialist":  dict(programming=9, analytical=9, creativity=8, interest_technology=10, math_comfort=8, cgpa=82),
+    "No-Code/Low-Code Developer":dict(creativity=8, analytical=7, communication=8, interest_technology=9, programming=4, cgpa=65),
+    "MLOps Engineer":            dict(programming=9, analytical=9, detail_oriented=9, interest_technology=10, math_comfort=8, cgpa=78),
+    "Sustainable Tech Analyst":  dict(analytical=8, interest_nature=9, interest_technology=8, communication=8, cgpa=75),
+    "Digital Twin Engineer":     dict(programming=8, analytical=9, math_comfort=8, interest_technology=9, detail_oriented=9, cgpa=76),
+    "Synthography Artist (AI Art)":dict(creativity=10, interest_arts=10, interest_technology=8, detail_oriented=8, cgpa=60),
+    "Cloud FinOps Practitioner": dict(analytical=9, math_comfort=8, interest_business=9, interest_technology=8, detail_oriented=9, cgpa=75),
+}
+
 def _generate_synthetic_data(careers_df: pd.DataFrame, n_samples: int = 3000) -> pd.DataFrame:
     """
     Generates synthetic training data based on career profiles.
@@ -82,86 +158,10 @@ def _generate_synthetic_data(careers_df: pd.DataFrame, n_samples: int = 3000) ->
     np.random.seed(42)
     rows = []
 
-    # Career → feature signature mapping
-    signatures = {
-        "Software Engineer":         dict(programming=9, analytical=8, math_comfort=7, interest_technology=9, creativity=5, communication=6, leadership=5, cgpa=72),
-        "Data Scientist":            dict(programming=8, analytical=9, math_comfort=9, interest_technology=9, interest_science=8, cgpa=80),
-        "Machine Learning Engineer": dict(programming=9, analytical=9, math_comfort=9, interest_technology=10, interest_science=8, cgpa=82),
-        "Cybersecurity Analyst":     dict(programming=7, analytical=8, math_comfort=6, interest_technology=9, detail_oriented=8, cgpa=70),
-        "Cloud Architect":           dict(programming=8, analytical=8, interest_technology=9, leadership=7, cgpa=75),
-        "UI/UX Designer":            dict(creativity=9, interest_arts=9, communication=8, interest_technology=6, detail_oriented=7, cgpa=65),
-        "Product Manager":           dict(leadership=9, communication=9, analytical=8, interest_business=9, cgpa=75),
-        "DevOps Engineer":           dict(programming=8, analytical=7, interest_technology=9, detail_oriented=8, cgpa=72),
-        "Business Analyst":          dict(analytical=8, communication=8, interest_business=8, math_comfort=6, cgpa=70),
-        "Doctor (MBBS)":             dict(interest_science=9, interest_social=8, interest_nature=7, patience=9, detail_oriented=9, cgpa=85, stream=6),
-        "Civil Engineer":            dict(math_comfort=8, analytical=8, interest_science=7, detail_oriented=8, cgpa=70, stream=5),
-        "Mechanical Engineer":       dict(math_comfort=8, analytical=8, interest_science=8, creativity=6, cgpa=72, stream=5),
-        "Electrical Engineer":       dict(math_comfort=9, analytical=8, interest_science=8, interest_technology=7, cgpa=74, stream=5),
-        "Chartered Accountant":      dict(math_comfort=8, analytical=8, interest_business=8, detail_oriented=9, cgpa=75, stream=3),
-        "Financial Analyst":         dict(math_comfort=8, analytical=9, interest_business=8, detail_oriented=8, cgpa=76),
-        "Lawyer":                    dict(communication=9, analytical=8, interest_social=7, competitiveness=8, cgpa=72, stream=9),
-        "Graphic Designer":          dict(creativity=10, interest_arts=10, communication=7, interest_technology=5, cgpa=60),
-        "Content Writer":            dict(communication=9, creativity=8, interest_arts=7, analytical=5, cgpa=62),
-        "Digital Marketer":          dict(communication=8, creativity=7, interest_business=8, analytical=7, cgpa=65),
-        "Teacher / Educator":        dict(communication=9, interest_social=9, patience=9, leadership=7, impact_importance=9, cgpa=68),
-        "Research Scientist":        dict(interest_science=10, analytical=9, math_comfort=9, patience=9, detail_oriented=9, cgpa=88),
-        "Architect":                 dict(creativity=9, interest_arts=8, analytical=7, detail_oriented=9, math_comfort=7, cgpa=72),
-        "Psychologist":              dict(interest_social=9, communication=9, patience=9, analytical=7, cgpa=72, stream=4),
-        "Journalist":                dict(communication=10, creativity=8, interest_social=8, risk_tolerance=7, cgpa=65),
-        "Entrepreneur":              dict(leadership=9, risk_tolerance=9, interest_business=10, communication=8, competitiveness=9, cgpa=65),
-        "Game Developer":            dict(programming=9, creativity=9, interest_technology=9, interest_arts=6, cgpa=70),
-        "Biomedical Engineer":       dict(interest_science=8, interest_nature=7, analytical=8, math_comfort=7, cgpa=78, stream=5),
-        "Environmental Scientist":   dict(interest_nature=9, interest_science=8, analytical=7, impact_importance=8, cgpa=72),
-        "HR Manager":                dict(communication=9, interest_social=8, leadership=8, patience=8, cgpa=68),
-        "Operations Manager":        dict(leadership=9, analytical=8, interest_business=8, detail_oriented=7, cgpa=72),
-        "Pharmacist":                dict(interest_science=8, interest_nature=7, detail_oriented=8, patience=7, cgpa=75, stream=6),
-        "Nurse":                     dict(interest_social=9, patience=9, detail_oriented=8, interest_science=8, cgpa=70, stream=6),
-        "Dentist":                   dict(interest_science=9, detail_oriented=9, patience=8, cgpa=80, stream=6),
-        "Physiotherapist":           dict(interest_science=8, interest_social=8, patience=8, cgpa=72, stream=6),
-        "Surgeon":                   dict(interest_science=10, detail_oriented=10, patience=8, analytical=9, cgpa=90, stream=6),
-        "Pilot":                     dict(interest_technology=6, competitiveness=8, risk_tolerance=8, math_comfort=8, cgpa=75),
-        "Air Traffic Controller":    dict(analytical=9, detail_oriented=9, patience=8, communication=8, cgpa=75),
-        "Electrician":               dict(detail_oriented=8, math_comfort=7, interest_technology=6, cgpa=65, stream=5),
-        "Plumber":                   dict(detail_oriented=8, patience=7, cgpa=60),
-        "Carpenter":                 dict(creativity=7, detail_oriented=8, cgpa=60),
-        "Chef":                      dict(creativity=8, patience=7, communication=6, cgpa=62),
-        "Hotel Manager":             dict(leadership=8, communication=9, interest_business=7, cgpa=70),
-        "Sales Manager":             dict(communication=9, leadership=8, competitiveness=8, interest_business=8, cgpa=68),
-        "Investment Banker":         dict(analytical=9, math_comfort=9, leadership=7, competitiveness=9, cgpa=85, stream=3),
-        "Marketing Manager":         dict(communication=9, creativity=8, interest_business=9, leadership=7, cgpa=72),
-        "IAS Officer":               dict(leadership=9, analytical=8, communication=8, impact_importance=9, cgpa=80),
-        "Police Officer":            dict(leadership=8, competitiveness=8, patience=7, physical=8, cgpa=70),
-        "Software Tester":           dict(analytical=8, detail_oriented=9, programming=6, cgpa=70),
-        "Blockchain Developer":      dict(programming=9, analytical=8, math_comfort=8, interest_technology=10, cgpa=78),
-        "Mobile App Developer":      dict(programming=9, creativity=7, interest_technology=9, cgpa=72),
-        "Fitness Trainer":           dict(interest_nature=7, communication=8, patience=8, leadership=6, cgpa=65),
-        "Musician":                  dict(creativity=10, interest_arts=10, patience=8, cgpa=60),
-        "Photographer":              dict(creativity=9, interest_arts=9, detail_oriented=7, cgpa=62),
-        "Social Worker":             dict(interest_social=10, communication=9, patience=9, impact_importance=10, cgpa=70),
-        "Veterinarian":              dict(interest_nature=10, interest_science=9, patience=9, detail_oriented=9, cgpa=85, stream=6),
-        "Web Developer":             dict(programming=8, interest_technology=9, creativity=6, cgpa=68),
-        "Accountant":                dict(analytical=8, math_comfort=8, detail_oriented=9, cgpa=75, stream=3),
-        "Farmer/Agriculturist":      dict(interest_nature=9, patience=8, impact_importance=7, cgpa=65),
-        "Mechanical Designer":       dict(analytical=8, creativity=7, math_comfort=7, detail_oriented=8, cgpa=70, stream=5),
-        "Quality Assurance Manager": dict(analytical=8, detail_oriented=9, leadership=7, cgpa=75),
-        "Data Analyst":              dict(analytical=9, math_comfort=7, programming=6, cgpa=72),
-        "Project Manager":           dict(leadership=8, communication=8, analytical=7, cgpa=75),
-        "AI Prompt Engineer":        dict(communication=9, analytical=8, creativity=9, interest_technology=10, programming=6, cgpa=70),
-        "Web3 Security Auditor":     dict(programming=9, analytical=10, math_comfort=8, detail_oriented=10, interest_technology=10, cgpa=80),
-        "Quantum Software Developer":dict(programming=9, analytical=10, math_comfort=10, interest_science=9, interest_technology=10, cgpa=88),
-        "Generative AI Specialist":  dict(programming=9, analytical=9, creativity=8, interest_technology=10, math_comfort=8, cgpa=82),
-        "No-Code/Low-Code Developer":dict(creativity=8, analytical=7, communication=8, interest_technology=9, programming=4, cgpa=65),
-        "MLOps Engineer":            dict(programming=9, analytical=9, detail_oriented=9, interest_technology=10, math_comfort=8, cgpa=78),
-        "Sustainable Tech Analyst":  dict(analytical=8, interest_nature=9, interest_technology=8, communication=8, cgpa=75),
-        "Digital Twin Engineer":     dict(programming=8, analytical=9, math_comfort=8, interest_technology=9, detail_oriented=9, cgpa=76),
-        "Synthography Artist (AI Art)":dict(creativity=10, interest_arts=10, interest_technology=8, detail_oriented=8, cgpa=60),
-        "Cloud FinOps Practitioner": dict(analytical=9, math_comfort=8, interest_business=9, interest_technology=8, detail_oriented=9, cgpa=75),
-    }
-
     default_sig = {f: 5 for f in FEATURE_COLS}
 
-    per_career = n_samples // len(signatures)
-    for career, sig in signatures.items():
+    per_career = n_samples // len(CAREER_SIGNATURES)
+    for career, sig in CAREER_SIGNATURES.items():
         base = {**default_sig, **sig}
         for _ in range(per_career):
             sample = {}
@@ -259,7 +259,7 @@ def predict_careers(responses: dict, top_n: int = 5) -> list[dict]:
 
         # Skill gap: compare user's skill ratings vs expected (simplified heuristic)
         skill_gap = _compute_skill_gaps(responses, career_name)
-        why = _generate_why(responses, career_name)
+        why = _generate_why(responses, career_name, row)
 
         results.append({
             "career": career_name,
@@ -323,88 +323,119 @@ def _compute_skill_gaps(responses: dict, career: str) -> list[dict]:
     reqs = requirements.get(career, {})
     gaps = []
     for skill, required in reqs.items():
-        user_score = responses.get(skill, 5)
-        gap = max(0, required - user_score)
-        label = skill.replace("_", " ").title()
-        gaps.append({"skill": label, "user": user_score, "required": required, "gap": round(gap, 1)})
-    return sorted(gaps, key=lambda x: -x["gap"])
+        if responses.get(skill, 5) < required:
+            gaps.append(skill.replace('_', ' ').title())
+    return gaps
 
+def _generate_why(responses: dict, career: str, career_row: pd.Series = None) -> str:
+    """Generate a high-quality, realistic, and highly explicit explanation of why this career fits."""
+    # 1. Nuanced feature labels for explicit explanations
+    feature_labels = {
+        "programming": "programming and software development",
+        "analytical": "analytical reasoning and logic",
+        "interest_technology": "emerging technologies",
+        "creativity": "creative problem-solving",
+        "communication": "communication and interpersonal work",
+        "leadership": "leadership and team management",
+        "interest_science": "scientific exploration",
+        "interest_social": "social impact and community service",
+        "interest_arts": "artistic design and aesthetics",
+        "interest_business": "business strategy and entrepreneurship",
+        "risk_tolerance": "decisive action under risk",
+        "math_comfort": "mathematics and quantitative analysis",
+        "patience": "patient, long-term project execution",
+        "detail_oriented": "attention to detail and precision",
+        "interest_nature": "environmental and natural sciences",
+        "impact_importance": "making a meaningful global impact",
+        "competitiveness": "competitive and goal-driven environments",
+    }
 
-def _generate_why(responses: dict, career: str) -> str:
-    """Generate a short plain-text explanation of why this career fits."""
-    reasons = []
+    # 2. Identify Top User Drivers (Signals)
+    user_signals = []
+    for feat, label in feature_labels.items():
+        score = float(responses.get(feat, 5))
+        if score >= 7:
+            user_signals.append((score, label))
+    
+    # Sort by score and take top 3
+    user_signals.sort(key=lambda x: x[0], reverse=True)
+    drivers = [s[1] for s in user_signals[:3]]
+    
+    # 3. Analyze Value Alignment (Salary, Risk, Math)
+    salary = float(responses.get("salary_priority", 5))
+    risk = float(responses.get("risk_tolerance", 5))
+    math = float(responses.get("math_comfort", 5))
+    
+    value_logic = []
+    if salary >= 8 and risk <= 4:
+        value_logic.append("high paying salary with less risks")
+    elif salary >= 8:
+        value_logic.append("high earning potential")
+    
+    if math >= 8:
+        value_logic.append("maths and quantitative challenges")
+    elif math >= 7:
+        value_logic.append("mathematical reasoning")
 
-    prog = responses.get("programming", 0)
-    anal = responses.get("analytical", 0)
-    tech = responses.get("interest_technology", 0)
-    creat = responses.get("creativity", 0)
-    comm = responses.get("communication", 0)
-    lead = responses.get("leadership", 0)
-    sci = responses.get("interest_science", 0)
-    social = responses.get("interest_social", 0)
-    arts = responses.get("interest_arts", 0)
-    biz = responses.get("interest_business", 0)
-    risk = responses.get("risk_tolerance", 0)
-    math = responses.get("math_comfort", 0)
-    patience = responses.get("patience", 0)
-    detail_oriented = responses.get("detail_oriented", 0)
+    # 4. Get the target profile (signature) or derive from CSV
+    signature = CAREER_SIGNATURES.get(career, {})
+    
+    # 5. Component 1: Explicit Alignment ("Because you showed...")
+    all_reasons = value_logic + drivers # Prioritize the specific value logic requested
+    
+    if not all_reasons:
+        p1 = f"This recommendation is based on your overall balanced profile, which aligns well with the diverse demands of a {career} role."
+    else:
+        # Construct the string
+        if len(all_reasons) == 1:
+            reasons_str = all_reasons[0]
+        elif len(all_reasons) == 2:
+            reasons_str = f"{all_reasons[0]} and {all_reasons[1]}"
+        else:
+            reasons_str = f"{', '.join(all_reasons[:2])}, and {all_reasons[2]}"
+        
+        p1 = f"We matched you to this career because you showed high interest in {reasons_str}. In a {career} role, these specific interests are directly applied to achieve professional success."
 
-    tech_careers = ["Software Engineer", "Machine Learning Engineer", "Data Scientist",
-                    "Cybersecurity Analyst", "Cloud Architect", "DevOps Engineer", "Game Developer"]
-    creative_careers = ["UI/UX Designer", "Graphic Designer", "Architect", "Content Writer"]
-    science_careers = ["Research Scientist", "Doctor (MBBS)", "Biomedical Engineer",
-                       "Environmental Scientist", "Pharmacist", "Nurse", "Dentist", "Surgeon", "Veterinarian"]
-    healthcare_careers = ["Nurse", "Dentist", "Physiotherapist", "Surgeon", "Doctor (MBBS)", "Pharmacist", "Veterinarian"]
-    trades_careers = ["Electrician", "Plumber", "Carpenter"]
-    creative_careers = ["UI/UX Designer", "Graphic Designer", "Architect", "Content Writer", "Musician", "Photographer", "Chef"]
+    # 6. Component 2: Cultural & Environment Fit (Personalized)
+    p2_parts = []
+    user_env = responses.get("work_env")
+    career_env_str = str(career_row.get("work_environment", "")).lower() if career_row is not None else ""
+    
+    if user_env == "Remote (flexible)" and "remote" in career_env_str:
+        p2_parts.append("your preference for remote work matches this industry's flexibility")
+    elif user_env == "Office (structured)" and "office" in career_env_str:
+        p2_parts.append("you'll thrive in the structured office setting this role provides")
+    
+    user_social = responses.get("introvert_extrovert", 5)
+    if user_social >= 8:
+        p2_parts.append("your outgoing personality will help you excel in the collaborative aspects of this field")
+    elif user_social <= 3:
+        p2_parts.append("the focused, independent nature of this work aligns with your preferred working style")
 
-    if career in tech_careers:
-        if prog >= 7:
-            reasons.append("your strong programming skills")
-        if tech >= 7:
-            reasons.append("your passion for technology")
-        if anal >= 7:
-            reasons.append("your analytical thinking")
-    elif career in creative_careers:
-        if creat >= 7:
-            reasons.append("your creative abilities")
-        if arts >= 7:
-            reasons.append("your interest in arts and design")
-    elif career in science_careers:
-        if sci >= 7:
-            reasons.append("your strong interest in science")
-        if math >= 7:
-            reasons.append("your comfort with mathematics")
-    elif career in healthcare_careers:
-        if social >= 7:
-            reasons.append("your compassion for helping people")
-        if patience >= 7:
-            reasons.append("your patience with patients")
-    elif career in trades_careers:
-        if detail_oriented >= 7:
-            reasons.append("your hands-on detail orientation")
-    elif career == "Product Manager":
-        if lead >= 7:
-            reasons.append("your leadership skills")
-        if comm >= 7:
-            reasons.append("your communication strengths")
-    elif career == "Entrepreneur":
-        if risk >= 7:
-            reasons.append("your high risk tolerance")
-        if lead >= 7:
-            reasons.append("your leadership drive")
-        if biz >= 7:
-            reasons.append("your passion for business")
-    elif career in ["Teacher / Educator", "Psychologist", "HR Manager", "IAS Officer", "Social Worker"]:
-        if social >= 7:
-            reasons.append("your enjoyment of helping others")
-        if comm >= 7:
-            reasons.append("your communication strengths")
+    if p2_parts:
+        p2 = "Additionally, " + " and ".join(p2_parts[:2]) + "."
+    else:
+        # Use description from CSV for more detail if p2 is empty
+        desc = str(career_row.get("description", "")) if career_row is not None else ""
+        if desc:
+            p2 = f"As a {career}, you will be {desc.lower().replace('.', '')}, which perfectly utilizes your stated preferences."
+        else:
+            p2 = f"This path offers the professional stability and environment you're looking for."
 
-    if not reasons:
-        reasons.append("your overall profile and preferences")
+    # 7. Component 3: Impact & Outlook
+    impact = responses.get("impact_importance", 5)
+    growth = str(career_row.get("growth_outlook", "")) if career_row is not None else "Stable"
+    
+    if impact >= 8:
+        p3 = f"Since you prioritize making a meaningful impact, the {growth.lower()} growth and social value of this path will be deeply rewarding."
+    else:
+        p3 = f"With a {growth.lower()} growth outlook, this career provides the long-term security and advancement opportunities you desire."
 
-    return "Matched because of " + ", ".join(reasons[:3]) + "."
+    stream_context = ""
+    if career_row is not None and "Bachelor's" in str(career_row.get("min_education", "")):
+        stream_context = f"\n\nYour educational background provides a solid foundation to transition into this field via the roadmap provided below."
+
+    return f"{p1}\n\n{p2}\n\n{p3}{stream_context}"
 
 
 if __name__ == "__main__":

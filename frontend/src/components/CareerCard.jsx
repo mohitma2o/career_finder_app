@@ -110,6 +110,30 @@ export default function CareerCard({ career, rank }) {
         {career.description}
       </p>
 
+      {/* Reasoning Section (Why this career?) */}
+      {career.why && (
+        <div style={{ 
+          marginBottom: '2rem', 
+          padding: '1.2rem 1.5rem', 
+          background: 'rgba(255, 255, 255, 0.03)', 
+          borderLeft: '4px solid var(--accent)',
+          borderRadius: '0 1rem 1rem 0',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px'
+        }}>
+          <span style={{ fontSize: '1.2rem' }}>💡</span>
+          <div>
+            <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', color: 'var(--accent)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Why this career?
+            </h4>
+            <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text)', opacity: 0.9, fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+              {career.why}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Interactive Skill Map (New Phase 2 Feature) */}
       <div style={{ marginBottom: '2rem' }}>
         <h4 style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>Core Competency Map</h4>

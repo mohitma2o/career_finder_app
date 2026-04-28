@@ -1,76 +1,62 @@
-# Career Finder AI 🎯
+# Career Finder
 
-A professional, AI-powered career recommendation platform that helps students discover their ideal career paths using ensemble machine learning and interactive data visualization.
+A tool designed to help students and professionals identify suitable career paths through data-driven analysis and machine learning. This application combines a comprehensive self-assessment with an ensemble model to provide tailored recommendations, market insights, and actionable roadmaps.
 
-## 🚀 Tech Stack
+## Technical Overview
 
-- **Frontend**: React 18, Vite, Three.js (Fiber/Drei), Framer Motion, Lucide Icons.
-- **Backend**: FastAPI (Python 3.10+), Uvicorn, Pydantic.
-- **ML Engine**: Scikit-Learn (RandomForest, GradientBoosting, SVM), Pandas, NumPy.
-- **Styling**: Vanilla CSS with glassmorphism and dark mode support.
+The project is built with a decoupled architecture focusing on performance and accuracy.
 
-## ✨ Key Features
+- **Frontend**: Developed with React and Vite, utilizing Three.js for interactive visualizations and Framer Motion for interface transitions.
+- **Backend**: Built on FastAPI to ensure high-performance API responses and seamless communication with the ML engine.
+- **Machine Learning**: Utilizes an ensemble approach with Scikit-Learn (RandomForest, GradientBoosting, and SVM) to analyze user profiles against a dataset of over 400 career signatures.
+- **Data Management**: Powered by Pandas and NumPy for efficient data processing and feature engineering.
 
-- **Advanced Assessment**: Multi-step questionnaire across 5 core dimensions.
-- **Ensemble ML Model**: High-accuracy predictions using a soft-voting classifier.
-- **Interactive Results**:
-  - **3D Career Showcase**: Immersive 3D visualization of top matches.
-  - **Analytics Dashboard**: Radar charts, confidence bars, and salary comparisons.
-  - **Career Explorer**: Searchable database of 130+ mapped careers.
-  - **AI Career Mentor**: Real-time advice on roadmaps, skills, and salaries.
-- **Professional Reports**: Export results to high-quality PDF or JSON formats.
+## Core Functionality
 
-## 🛠️ Quick Start
+- **Comprehensive Assessment**: Evaluates users across academic background, technical skills, personal interests, work preferences, and personality traits.
+- **Personalized Reasoning**: Provides detailed explanations for each recommendation, referencing specific user signals like salary priority, risk tolerance, and skill alignment.
+- **Industry Analytics**: Displays comparative data for different career paths, including salary trends, growth outlooks, and confidence scores.
+- **Skill Assessment**: Includes a technical knowledge test to help users gauge their preparation level for a specific role.
+- **Resume and Interview Support**: Generates tailored resume templates and provides common interview questions for recommended careers.
 
-### 1. Prerequisites
-- Python 3.10+
-- Node.js 18+
+## Getting Started
 
-### 2. Backend Setup
-```bash
-# Create and activate virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1 # Windows
-source .venv/bin/activate    # Mac/Linux
+### Prerequisites
+- Python 3.10 or higher
+- Node.js 18 or higher
 
-# Install dependencies
-pip install -r requirements.txt
+### Backend Installation
+1. Create a virtual environment:
+   `python -m venv .venv`
+2. Activate the environment:
+   - Windows: `.\.venv\Scripts\Activate.ps1`
+   - Mac/Linux: `source .venv/bin/activate`
+3. Install dependencies:
+   `pip install -r requirements.txt`
+4. Start the server:
+   `python -m uvicorn backend.main:app --reload`
 
-# Run the server
-python -m uvicorn backend.main:app --reload
-```
+### Frontend Installation
+1. Navigate to the frontend directory:
+   `cd frontend`
+2. Install dependencies:
+   `npm install`
+3. Start the development server:
+   `npm run dev`
 
-### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
+The application will be accessible at `http://localhost:5173`.
 
-The application will be available at `http://localhost:5173`.
+## Project Structure
 
-## 📁 File Structure
+- `backend/`: API implementation and routing logic.
+- `frontend/`: React source code and assets.
+- `ml_model.py`: Core logic for career prediction and reasoning generation.
+- `questionnaire.py`: Definition of the assessment sections and questions.
+- `careers_data.csv`: The foundational dataset containing career attributes and requirements.
 
-```
-career_finder_app/
-├── backend/            # FastAPI implementation & routes
-├── frontend/           # React application (Vite-based)
-├── ml_model.py         # ML pipeline and training logic
-├── questionnaire.py    # Assessment definitions
-├── careers_data.csv    # Knowledge base (130+ careers)
-└── README.md
-```
+## Methodology
 
-## 🧠 How It Works
-
-1. **Data Ingestion**: The system processes a 25-point profile from the user.
-2. **Feature Engineering**: Encodes academic, skill, and interest parameters.
-3. **Inference**: The ensemble model calculates probabilities across 30+ career clusters.
-4. **Contextual Enrichment**: Matches top predictions with market data (Salary, Growth, Skills).
-5. **Guidance**: The AI Mentor provides specific roadmap steps based on results.
-
-## 🎯 Objectives
-
-- **Precision Matching**: Leverage supervised ML for high-confidence career alignment.
-- **Professional UX**: Clean, emoji-free (in core data), premium aesthetic.
-- **Actionable Insights**: Provide clear roadmaps and free learning resources for every path.
+1. **Profile Synthesis**: User responses are converted into numerical feature vectors.
+2. **Probability Mapping**: The ensemble model calculates match scores across multiple career categories.
+3. **Data Enrichment**: Results are cross-referenced with real-world market data for salary and growth projections.
+4. **Actionable Roadmap**: The system generates a multi-phase transition plan for the top career matches.

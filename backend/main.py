@@ -2,7 +2,10 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from . import routes
+try:
+    from . import routes
+except ImportError:
+    from . import routes
 
 # Define paths for model check
 MODEL_PATH = "career_model.pkl"
@@ -34,7 +37,43 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    import time
+    return {"status": "ok", "timestamp": time.time()}
+
+from pydantic import BaseModel
+class RewriteRequest(BaseModel):
+    text: str
+    target_career: str
+
+@app.post("/api/resume-rewrite")
+async def direct_rewrite(request: RewriteRequest):
+    # This matches the frontend call /api/resume-rewrite
+    text = request.text.strip()
+    career = request.target_career or "Professional"
+    return {"rewritten_text": f"Spearheaded initiatives as a {career} specialist, focusing on core deliverables."}
+
+class AnalyzeRequest(BaseModel):
+    resume_data: dict
+    career_name: str
+
+@app.post("/api/resume/analyze")
+async def direct_analyze(request: AnalyzeRequest):
+    # This matches the frontend call /api/resume/analyze
+    from .resume_analyzer import analyze_resume
+    result = analyze_resume(request.resume_data, request.career_name)
+    return result
+
+@app.post("/api/resume/export-pdf")
+async def direct_export_pdf(request: dict):
+    # This matches the frontend call /api/resume/export-pdf
+    # Convert dict to ResumePdfRequest-like structure for the helper
+    try:
+        from .routes import ResumePdfRequest, api_export_resume_pdf
+        return await api_export_resume_pdf(ResumePdfRequest(**request))
+    except Exception as e:
+        # Fallback if class import fails
+        print(f"Export Direct Error: {e}")
+        return {"error": str(e)}
 
 # Include API routes
 app.include_router(routes.api_router, prefix="/api")

@@ -7,6 +7,7 @@ import BarChart from "../components/BarChart";
 import ThreeCanvas from "../components/ThreeCanvas";
 import CareerCard3D from "../components/CareerCard3D";
 import MentorChat from "../components/MentorChat";
+import { Sparkles } from "lucide-react";
 import { exportPdf } from "../api/client";
 
 /**
@@ -57,7 +58,7 @@ export default function ResultsPage({ results, responses, onReset }) {
   }
 
   const top = results[0];
-  const tabs = ["Recommendations", "Analytics", "Resume", "Interview Prep", "Compare", "Export"];
+  const tabs = ["Recommendations", "Analytics", "Resume Maker", "Interview Prep", "Compare", "Export"];
 
   // Resume Template Generator
   const resumeTemplate = useMemo(() => {
@@ -212,6 +213,11 @@ TECHNICAL TOOLS & STACK
           <div>
             <h3 style={{ fontSize: '1.2rem', opacity: 0.8 }}>Recommended Path</h3>
             <h2 style={{ fontSize: '2rem', margin: '0.2rem 0' }}>{top?.career || "Calculating..."}</h2>
+            {top?.why && (
+              <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--accent)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '1rem' }}>💡</span> {top.why}
+              </p>
+            )}
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--accent)' }}>{top?.confidence || 0}%</div>
@@ -264,50 +270,46 @@ TECHNICAL TOOLS & STACK
       )}
 
       {activeTab === 2 && (
-        <div className="fade-up">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <div>
-              <h3 style={{ margin: 0 }}>Smart Resume Template</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>AI-generated foundation based on your top match.</p>
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button className="btn" onClick={() => {
-                const element = document.createElement("a");
-                const file = new Blob([resumeTemplate], {type: 'text/plain'});
-                element.href = URL.createObjectURL(file);
-                element.download = "career_resume_template.txt";
-                document.body.appendChild(element);
-                element.click();
-              }}>Download .TXT</button>
-              <button className="btn btn-primary" onClick={() => {
-                navigator.clipboard.writeText(resumeTemplate);
-                alert("Resume template copied to clipboard!");
-              }}>Copy to Clipboard</button>
-            </div>
-          </div>
+        <div className="fade-up" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <div style={{ 
-            background: 'white', 
-            color: '#1a1a1a',
+            maxWidth: '600px', 
+            margin: '0 auto', 
+            background: 'rgba(129, 140, 248, 0.05)', 
             padding: '4rem', 
-            borderRadius: '4px', 
-            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
-            whiteSpace: 'pre-wrap',
-            fontFamily: '"Courier New", Courier, monospace',
-            fontSize: '0.9rem',
-            lineHeight: '1.5',
-            maxWidth: '850px',
-            margin: '0 auto',
-            border: '1px solid #ddd',
-            minHeight: '800px',
-            position: 'relative'
+            borderRadius: '2rem', 
+            border: '1px solid rgba(129, 140, 248, 0.2)',
+            backdropFilter: 'blur(20px)'
           }}>
-            {/* Watermark/Logo for professional feel */}
-            <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '0.6rem', color: '#ccc', letterSpacing: '2px' }}>CAREER FINDER AI / TEMPLATE</div>
-            {resumeTemplate}
+            <div style={{ 
+              width: '80px', 
+              height: '80px', 
+              borderRadius: '50%', 
+              background: 'var(--accent)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              margin: '0 auto 2rem',
+              boxShadow: '0 0 30px var(--accent)'
+            }}>
+              <Sparkles size={40} color="var(--bg)" />
+            </div>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontWeight: '800' }}>AI Resume Maker</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: '1.6' }}>
+              Transform your {top.career} potential into a professional reality. Our AI-driven builder helps you craft a high-impact resume tailored specifically for your top career match.
+            </p>
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <button 
+                className="btn btn-glow" 
+                style={{ padding: '1.2rem', fontSize: '1.1rem', borderRadius: '1rem' }}
+                onClick={() => navigate(`/resume-maker?career=${encodeURIComponent(top.career)}`)}
+              >
+                🚀 Start Building Your Resume
+              </button>
+              <p style={{ fontSize: '0.85rem', opacity: 0.5, marginTop: '1rem' }}>
+                Includes AI-generated summaries, skill optimization, and professional formatting.
+              </p>
+            </div>
           </div>
-          <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-            💡 Tip: Open this in any text editor and fill in the bracketed [ ] sections to finish your resume.
-          </p>
         </div>
       )}
 

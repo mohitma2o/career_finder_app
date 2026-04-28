@@ -7,7 +7,9 @@
 const BASE = "/api";
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
+  const url = `${BASE}${path}`;
+  console.log(`[API Request] ${options.method || 'GET'} ${url}`);
+  const res = await fetch(url, {
     headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
   });
@@ -60,3 +62,32 @@ export async function chatWithMentor(message, careerContext = null) {
   });
   return res.json();
 }
+
+export async function getSkillTestQuestions(career) {
+  const res = await request(`/skill-test-questions?career=${encodeURIComponent(career)}`);
+  return res.json();
+}
+
+export const analyzeResume = async (resumeData, careerName) => {
+  const res = await request("/resume/analyze", {
+    method: 'POST',
+    body: JSON.stringify({ resume_data: resumeData, career_name: careerName }),
+  });
+  return res.json();
+};
+
+export const exportResumePdf = async (resumeData, careerName) => {
+  const res = await request("/resume/export-pdf", {
+    method: 'POST',
+    body: JSON.stringify({ resume_data: resumeData, career_name: careerName }),
+  });
+  return res.blob();
+};
+
+export const rewriteText = async (text, targetCareer) => {
+  const res = await request("/resume-rewrite", {
+    method: 'POST',
+    body: JSON.stringify({ text, target_career: targetCareer }),
+  });
+  return res.json();
+};

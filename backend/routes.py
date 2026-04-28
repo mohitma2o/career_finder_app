@@ -5,6 +5,19 @@ import pandas as pd
 import os
 import sys
 from pathlib import Path
+import os
+try:
+    import google.generativeai as genai
+    from dotenv import load_dotenv
+    load_dotenv()
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    if GEMINI_API_KEY:
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-pro')
+    else:
+        model = None
+except ImportError:
+    model = None
 from fpdf import FPDF
 import datetime
 import io
@@ -16,6 +29,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from questionnaire import SECTIONS
 from ml_model import predict_careers
+from .skill_questions import get_questions_for_career
+from .resume_analyzer import analyze_resume
 
 router = APIRouter()
 
@@ -49,6 +64,14 @@ class ChatRequest(BaseModel):
 class ExportRequest(BaseModel):
     results: List[Dict[str, Any]]
     responses: Dict[str, Any]
+
+class AnalyzeResumeRequest(BaseModel):
+    resume_data: Dict[str, Any]
+    career_name: str
+
+class ResumePdfRequest(BaseModel):
+    resume_data: Dict[str, Any]
+    career_name: str
 
 # Data Loading
 DATA_PATH = PROJECT_ROOT / "careers_data.csv"
@@ -174,6 +197,77 @@ async def career_mentor_chat(request: ChatRequest):
 
     return {"response": response}
 
+@router.get("/skill-test-questions")
+async def get_skill_test_questions(career: str):
+    df = load_careers_df()
+    match = df[df["career"].str.lower() == career.lower()]
+    category = None
+    if not match.empty:
+        category = match.iloc[0]["category"]
+    
+    questions = get_questions_for_career(career, category)
+    return {"questions": questions}
+
+class RewriteRequest(BaseModel):
+    text: str
+    target_career: str
+
+@router.post("/resume-rewrite")
+async def api_rewrite_resume_text(request: RewriteRequest):
+    text = request.text.strip()
+    target_career = request.target_career.strip() or "Professional"
+    
+    # Attempt to use Gemini for premium rewriting
+    if model and GEMINI_API_KEY:
+        try:
+            prompt = f"""
+            As a world-class professional resume writer, rewrite the following job description/summary to be high-impact, results-oriented, and tailored for a {target_career} role.
+            Use strong action verbs, quantify achievements where possible, and ensure it sounds sophisticated but authentic.
+            Return ONLY the rewritten text, formatted as a few professional bullet points or a concise paragraph.
+            
+            Original Text: "{text}"
+            Target Career: {target_career}
+            """
+            response = model.generate_content(prompt)
+            if response and response.text:
+                return {"rewritten_text": response.text.strip()}
+        except Exception as e:
+            print(f"Gemini Error: {e}")
+            # Fallback to local logic if Gemini fails
+    
+    # --- FALLBACK LOCAL LOGIC (Universal Matching) ---
+    df = load_careers_df()
+    text_lower = text.lower()
+    active_role = target_career
+    
+    # Intelligent matching for fallback
+    best_match = None
+    max_score = 0
+    for _, row in df.iterrows():
+        role = row["career"]
+        skills = str(row["key_skills"]).lower()
+        score = 0
+        if role.lower() in text_lower: score += 10
+        if any(skill.strip().lower() in text_lower for skill in skills.split(",")): score += 5
+        if score > max_score:
+            max_score = score
+            best_match = role
+    if best_match and max_score >= 5: active_role = best_match
+
+    if not text:
+        return {"rewritten_text": f"Dedicated {active_role} professional with a commitment to excellence and strategic growth."}
+
+    keywords = [word.strip(".,!") for word in text.split() if len(word) > 3]
+    k = keywords[:3] if keywords else ["strategic", "excellence", "impact"]
+    
+    templates = [
+        f"Spearheaded high-impact initiatives as a {active_role}, leveraging {k[0]} to drive core business objectives.",
+        f"Optimized complex workflows through the strategic application of {k[1] if len(k)>1 else 'industry-leading methodologies'}.",
+        f"Collaborated with cross-functional teams to deliver {active_role} excellence, focusing on performance metrics."
+    ]
+    
+    return {"rewritten_text": "\n".join([f"• {t}" for t in templates])}
+
 @router.post("/export/pdf")
 async def export_pdf(request: ExportRequest):
     def safe_text(text):
@@ -219,6 +313,136 @@ async def export_pdf(request: ExportRequest):
         content=pdf_output,
         media_type="application/pdf",
         headers={"Content-Disposition": "attachment; filename=career_report.pdf"}
+    )
+
+@router.post("/resume/analyze")
+async def api_analyze_resume(request: AnalyzeResumeRequest):
+    try:
+        if not request.career_name:
+            raise HTTPException(status_code=400, detail="Career name is required for analysis")
+
+        df = load_careers_df()
+        # Clean the input and the data for matching
+        search_name = request.career_name.strip().lower()
+        match = df[df["career"].str.strip().str.lower() == search_name]
+        
+        if match.empty:
+            # Fallback: check if the career name is contained in the string
+            match = df[df["career"].str.lower().str.contains(search_name, na=False)]
+            
+        if match.empty:
+            raise HTTPException(status_code=404, detail=f"Career '{request.career_name}' not found in our database")
+        
+        career_info = match.iloc[0].to_dict()
+        analysis = analyze_resume(request.resume_data, career_info)
+        return analysis
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"RESUME ANALYSIS ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Analysis Error: {str(e)}")
+
+@router.post("/resume/export-pdf")
+async def api_export_resume_pdf(request: ResumePdfRequest):
+    def safe_text(text):
+        if not text: return ""
+        return str(text).encode('ascii', 'ignore').decode('ascii')
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    
+    data = request.resume_data
+    personal = data.get("personal", {})
+    
+    # 1. Header (Formal)
+    pdf.set_font("Helvetica", 'B', 24)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 12, safe_text(personal.get("name", "RESUME")).upper(), ln=True, align="C")
+    
+    pdf.set_font("Helvetica", '', 9)
+    pdf.set_text_color(80, 80, 80)
+    contact_info = f"{personal.get('location', '')} | {personal.get('phone', '')} | {personal.get('email', '')}"
+    pdf.cell(0, 6, safe_text(contact_info), ln=True, align="C")
+    
+    links = []
+    if personal.get("linkedin"): links.append(personal["linkedin"])
+    if personal.get("github"): links.append(personal["github"])
+    if links:
+        pdf.cell(0, 6, safe_text(" | ".join(links)), ln=True, align="C")
+    
+    pdf.ln(8)
+    pdf.set_draw_color(79, 70, 229) # Accent color
+    pdf.set_line_width(0.5)
+    pdf.line(20, pdf.get_y(), 190, pdf.get_y())
+    pdf.ln(5)
+
+    # 2. Summary
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.set_text_color(79, 70, 229)
+    pdf.cell(0, 8, "EXECUTIVE SUMMARY", ln=True)
+    pdf.set_font("Helvetica", '', 10)
+    pdf.set_text_color(40, 40, 40)
+    pdf.multi_cell(0, 5, safe_text(data.get("summary", "")))
+    pdf.ln(5)
+
+    # 3. Experience
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.set_text_color(79, 70, 229)
+    pdf.cell(0, 8, "PROFESSIONAL EXPERIENCE", ln=True)
+    
+    for exp in data.get("experience", []):
+        pdf.set_font("Helvetica", 'B', 10)
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(100, 6, safe_text(exp.get("role", "")).upper(), ln=False)
+        pdf.set_font("Helvetica", 'I', 10)
+        pdf.cell(0, 6, safe_text(exp.get("period", "")), ln=True, align="R")
+        
+        pdf.set_font("Helvetica", 'B', 10)
+        pdf.set_text_color(80, 80, 80)
+        pdf.cell(0, 6, safe_text(exp.get("company", "")), ln=True)
+        
+        pdf.set_font("Helvetica", '', 10)
+        pdf.set_text_color(40, 40, 40)
+        pdf.multi_cell(0, 5, safe_text(exp.get("description", "")))
+        pdf.ln(3)
+
+    # 4. Education
+    pdf.ln(2)
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.set_text_color(79, 70, 229)
+    pdf.cell(0, 8, "EDUCATION", ln=True)
+    
+    for edu in data.get("education", []):
+        pdf.set_font("Helvetica", 'B', 10)
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(100, 6, safe_text(edu.get("degree", "")), ln=False)
+        pdf.set_font("Helvetica", '', 10)
+        pdf.cell(0, 6, safe_text(edu.get("year", "")), ln=True, align="R")
+        pdf.set_font("Helvetica", '', 10)
+        pdf.set_text_color(80, 80, 80)
+        pdf.cell(0, 5, safe_text(edu.get("school", "")), ln=True)
+        pdf.ln(2)
+
+    # 5. Skills
+    pdf.ln(2)
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.set_text_color(79, 70, 229)
+    pdf.cell(0, 8, "CORE COMPETENCIES", ln=True)
+    pdf.set_font("Helvetica", '', 10)
+    pdf.set_text_color(40, 40, 40)
+    pdf.multi_cell(0, 6, safe_text(data.get("skills", "")))
+
+    pdf.ln(10)
+    pdf.set_font("Helvetica", 'I', 8)
+    pdf.set_text_color(150, 150, 150)
+    pdf.cell(0, 10, "Generated by Career Finder AI - Top 1% Industry Format", ln=True, align="C")
+
+    pdf_output = bytes(pdf.output())
+    return Response(
+        content=pdf_output,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=resume.pdf"}
     )
 
 
