@@ -17,26 +17,26 @@ export default function AdminUsersPage() {
     if (token) fetchUsers();
   }, [token]);
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_URL}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(res.data);
-    } catch (err) {
-      console.warn("Backend users fetch failed, using local storage...");
-      const localUsers = JSON.parse(localStorage.getItem('cf_local_users') || '[]');
-      // Include the hardcoded super admin in the list
-      const allUsers = [
-        { id: '1', username: 'mohit', role: 'super_admin' },
-        ...localUsers
-      ];
-      setUsers(allUsers);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${API_URL}/admin/users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUsers(res.data);
+      } catch (err) {
+        console.warn("Backend users fetch failed, using local storage fallback.");
+        const localUsers = JSON.parse(localStorage.getItem('cf_local_users') || '[]');
+        // Ensure the super admin is always there
+        const allUsers = [
+          { id: '1', username: 'mohit', role: 'super_admin' },
+          ...localUsers.filter(u => u.username !== 'mohit')
+        ];
+        setUsers(allUsers);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const toggleRole = async (username, currentRole) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
