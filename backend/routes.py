@@ -206,10 +206,13 @@ async def google_login(request: Dict[str, str], db: Session = Depends(get_db)):
     pass
 
 @router.get("/history")
-async def get_history(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+async def get_history(userId: Optional[int] = None, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     # Admins/Super Admins see everything, Users see only their own
     if current_user.get("role") in ["admin", "super_admin"]:
-        histories = db.query(DBHistory).order_by(DBHistory.timestamp.desc()).all()
+        if userId:
+            histories = db.query(DBHistory).filter(DBHistory.user_id == userId).order_by(DBHistory.timestamp.desc()).all()
+        else:
+            histories = db.query(DBHistory).order_by(DBHistory.timestamp.desc()).all()
     else:
         histories = db.query(DBHistory).filter(DBHistory.user_id == current_user.get("id")).order_by(DBHistory.timestamp.desc()).all()
     

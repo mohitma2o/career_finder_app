@@ -31,7 +31,7 @@
   --header-h:  0px;
 }
 
-html.dark, [data-theme='dark'] {
+[data-theme='dark'] {
   /* Default Deep Space Dark */
   --bg:        #000000;
   --bg-raised: #111111;

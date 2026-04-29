@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Trash2, Clock, ChevronRight, BarChart2, Search } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Trash2, Clock, ChevronRight, BarChart2, Search, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 export default function HistoryPage({ onRestore }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const filterUserId = searchParams.get('userId');
   const { user, token } = useAuth();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,13 +16,14 @@ export default function HistoryPage({ onRestore }) {
 
   useEffect(() => {
     fetchHistory();
-  }, [token]);
+  }, [token, filterUserId]);
 
   const fetchHistory = async () => {
     setLoading(true);
     try {
       // Try to fetch history from server with token
-      const res = await axios.get(`${API_URL}/history`, {
+      const url = filterUserId ? `${API_URL}/history?userId=${filterUserId}` : `${API_URL}/history`;
+      const res = await axios.get(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setHistory(res.data);
@@ -53,8 +55,25 @@ export default function HistoryPage({ onRestore }) {
   return (
     <div className="fade-up">
       <div style={{ marginBottom: "3rem" }}>
-        <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>Your Journey</h1>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem' }}>Review your past career discovery sessions.</p>
+        {filterUserId && (
+          <button 
+            onClick={() => navigate('/admin/users')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              padding: '0.6rem 1rem', borderRadius: '0.8rem', color: 'white', 
+              cursor: 'pointer', marginBottom: '1.5rem'
+            }}
+          >
+            <ArrowLeft size={16} /> Back to User Management
+          </button>
+        )}
+        <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>
+          {filterUserId ? "User Activity" : "Your Journey"}
+        </h1>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem' }}>
+          {filterUserId ? "Reviewing session logs for specific user." : "Review your past career discovery sessions."}
+        </p>
       </div>
 
       <div style={{ position: 'relative', marginBottom: '2rem' }}>

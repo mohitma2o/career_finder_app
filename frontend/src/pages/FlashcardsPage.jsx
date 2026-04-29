@@ -56,7 +56,7 @@ export default function FlashcardsPage() {
             <div style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '1.5rem' }}>
               {current.category}
             </div>
-            <h2 style={{ fontSize: '2.2rem', lineHeight: 1.2 }}>{current.q}</h2>
+            <h2 style={{ fontSize: '2.2rem', lineHeight: 1.2, color: 'white' }}>{current.q}</h2>
             <div style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.2)', fontSize: '0.9rem' }}>
               Click to flip
             </div>

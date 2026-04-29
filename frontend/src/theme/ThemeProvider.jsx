@@ -8,7 +8,6 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.classList.add('dark'); // Always keep dark class for overall aesthetic
     localStorage.setItem('cf_theme_aura', theme);
   }, [theme]);
 

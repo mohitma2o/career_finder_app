@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Users, Shield, ShieldCheck, Search, ArrowLeftRight, Download, BarChart2, TrendingUp, Activity } from 'lucide-react';
+import { Users, Shield, ShieldCheck, Search, ArrowLeftRight, Download, BarChart2, TrendingUp, Activity, History } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 
 export default function AdminUsersPage() {
   const { token, user: currentUser, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -194,15 +196,15 @@ export default function AdminUsersPage() {
                   </span>
                 </td>
                 <td style={{ padding: '1.5rem 2.5rem', textAlign: 'right' }}>
-                  {u.role !== 'super_admin' && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem' }}>
                     <button 
-                      onClick={() => toggleRole(u.username, u.role)}
+                      onClick={() => navigate(`/history?userId=${u.id}`)}
                       style={{ 
-                        background: 'rgba(255,255,255,0.03)', 
-                        border: '1px solid rgba(255,255,255,0.1)', 
+                        background: 'rgba(129, 140, 248, 0.1)', 
+                        border: '1px solid rgba(129, 140, 248, 0.2)', 
                         padding: '0.6rem 1.2rem', 
                         borderRadius: '0.8rem',
-                        color: 'white',
+                        color: 'var(--accent)',
                         fontSize: '0.85rem',
                         cursor: 'pointer',
                         display: 'inline-flex',
@@ -210,13 +212,33 @@ export default function AdminUsersPage() {
                         gap: '0.5rem',
                         transition: 'all 0.2s'
                       }}
-                      onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                      onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                     >
-                      <ArrowLeftRight size={14} />
-                      {u.role === 'admin' ? 'Demote' : 'Promote'}
+                      <History size={14} />
+                      History
                     </button>
-                  )}
+
+                    {u.role !== 'super_admin' && (
+                      <button 
+                        onClick={() => toggleRole(u.username, u.role)}
+                        style={{ 
+                          background: 'rgba(255,255,255,0.03)', 
+                          border: '1px solid rgba(255,255,255,0.1)', 
+                          padding: '0.6rem 1.2rem', 
+                          borderRadius: '0.8rem',
+                          color: 'white',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <ArrowLeftRight size={14} />
+                        {u.role === 'admin' ? 'Demote' : 'Promote'}
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
