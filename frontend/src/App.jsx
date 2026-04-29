@@ -12,6 +12,8 @@ import ResumeMakerPage from "./pages/ResumeMakerPage";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import ThreeCanvas from "./components/ThreeCanvas";
 import LandingScene from "./components/LandingScene";
+import LoginPage from "./pages/LoginPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 
 export default function App() {
   const [results, setResults] = useState(() => {
@@ -95,6 +97,8 @@ export default function App() {
               <Route path="/history" element={<HistoryPage onRestore={handleRestore} />} />
               <Route path="/skill-test" element={<SkillTestPage />} />
               <Route path="/resume-maker" element={<ResumeMakerPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
             </Routes>
           </main>
         </div>

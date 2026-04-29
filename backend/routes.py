@@ -32,7 +32,7 @@ from ml_model import predict_careers
 from .skill_questions import get_questions_for_career
 from .resume_analyzer import analyze_resume
 from .database import SessionLocal, User as DBUser, History as DBHistory, init_db
-from .auth import create_access_token, verify_google_token, get_current_user, is_admin, is_super_admin, ADMIN_EMAIL, SUPER_ADMIN_USER, SUPER_ADMIN_PASS, verify_password, get_password_hash
+from .auth import create_access_token, verify_google_token, get_current_user, get_optional_current_user, is_admin, is_super_admin, ADMIN_EMAIL, SUPER_ADMIN_USER, SUPER_ADMIN_PASS, verify_password, get_password_hash
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
@@ -104,28 +104,23 @@ async def get_questionnaire():
     return SECTIONS
 
 @router.post("/predict")
-async def predict(request: PredictRequest, db: Session = Depends(get_db), token: Optional[str] = None):
+async def predict(request: PredictRequest, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_current_user)):
     try:
         results = predict_careers(request.responses, top_n=request.top_n)
         
-        # Save to history if token is provided and valid
-        if token:
+        # Save to history if user is logged in
+        if current_user:
             try:
-                from .auth import get_current_user
-                # get_current_user is a dependency, but we can call its logic here
-                # Or better, use the current_user if we make it a dependency of the route
-                user_info = get_current_user(token)
-                if user_info:
-                    user_username = user_info.get("sub")
-                    user = db.query(DBUser).filter(DBUser.username == user_username).first()
-                    if user:
-                        new_history = DBHistory(
-                            results=results,
-                            responses=request.responses,
-                            user_id=user.id
-                        )
-                        db.add(new_history)
-                        db.commit()
+                user_username = current_user.get("sub")
+                user = db.query(DBUser).filter(DBUser.username == user_username).first()
+                if user:
+                    new_history = DBHistory(
+                        results=results,
+                        responses=request.responses,
+                        user_id=user.id
+                    )
+                    db.add(new_history)
+                    db.commit()
             except Exception as e:
                 print(f"History Save Error: {e}")
         
@@ -211,9 +206,13 @@ async def google_login(request: Dict[str, str], db: Session = Depends(get_db)):
     pass
 
 @router.get("/history")
-async def get_history(db: Session = Depends(get_db)):
-    # Without login, we'll return all history for everyone
-    histories = db.query(DBHistory).order_by(DBHistory.timestamp.desc()).all()
+async def get_history(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    # Admins/Super Admins see everything, Users see only their own
+    if current_user.get("role") in ["admin", "super_admin"]:
+        histories = db.query(DBHistory).order_by(DBHistory.timestamp.desc()).all()
+    else:
+        histories = db.query(DBHistory).filter(DBHistory.user_id == current_user.get("id")).order_by(DBHistory.timestamp.desc()).all()
+    
     results = []
     for h in histories:
         owner = db.query(DBUser).filter(DBUser.id == h.user_id).first()

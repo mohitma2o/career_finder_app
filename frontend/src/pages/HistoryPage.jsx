@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Clock, ChevronRight, BarChart2, Search } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function HistoryPage({ onRestore }) {
   const navigate = useNavigate();
+  const { user, token } = useAuth();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -13,18 +15,26 @@ export default function HistoryPage({ onRestore }) {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [token]);
 
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      // Try to fetch global history (if the backend allows public access)
-      const res = await axios.get(`${API_URL}/history`);
+      // Try to fetch history from server with token
+      const res = await axios.get(`${API_URL}/history`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       setHistory(res.data);
     } catch (err) {
-      console.log("No server history found or access restricted. Using local history.");
+      console.warn("Server history fetch failed or unauthorized. Using scoped local history.");
       const saved = JSON.parse(localStorage.getItem('cf_history') || '[]');
-      setHistory(saved);
+      
+      // If logged in as admin, show everything. Otherwise filter by user id.
+      const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+      const userId = user?.id || 'anonymous';
+      const scoped = isAdmin ? saved : saved.filter(h => (h.userId || 'anonymous') === userId);
+      
+      setHistory(scoped);
     } finally {
       setLoading(false);
     }

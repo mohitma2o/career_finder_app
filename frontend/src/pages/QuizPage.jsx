@@ -66,8 +66,20 @@ export default function QuizPage({ onResults }) {
       setPredicting(true);
       try {
         const data = await predict(responses, 5);
-        const results = data; // API returns the list directly
+        const results = data; 
         localStorage.setItem("cf_results", JSON.stringify(results));
+        
+        // Save to local history fallback
+        const history = JSON.parse(localStorage.getItem('cf_history') || '[]');
+        history.unshift({
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          results: results,
+          responses: responses,
+          userId: localStorage.getItem('cf_token')?.startsWith('mock-token-') ? JSON.parse(localStorage.getItem('cf_user_mock'))?.id : 'anonymous'
+        });
+        localStorage.setItem('cf_history', JSON.stringify(history.slice(0, 50)));
+
         onResults(results);
         navigate("/results");
       } catch (err) {

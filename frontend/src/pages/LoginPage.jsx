@@ -1,232 +1,176 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
-import { LogIn, UserPlus, User, Sparkles, ArrowRight, Loader2, Lock, Shield, ChevronLeft } from "lucide-react";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { LogIn, UserPlus, Shield, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
-  const [isRegister, setIsRegister] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsProcessing(true);
-    setError(null);
-    setSuccess(null);
-    
-    if (isRegister) {
-      const result = await register(username, password);
-      if (result.success) {
-        setSuccess("Account created! You can now login.");
-        setIsRegister(false);
-        setPassword("");
+    setError('');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const res = await login(username, password);
+        if (res.success) {
+          navigate('/');
+        } else {
+          setError(res.error);
+        }
       } else {
-        setError(result.error);
+        const res = await register(username, password);
+        if (res.success) {
+          setIsLogin(true);
+          setError('Registration successful! Please log in.');
+        } else {
+          setError(res.error);
+        }
       }
-    } else {
-      const result = await login(username, password);
-      if (result.success) {
-        navigate("/history");
-      } else {
-        setError(result.error);
-      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setIsProcessing(false);
   };
 
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      display: "flex", 
-      alignItems: "center", 
-      justifyContent: "center",
-      background: "transparent",
-      position: "relative",
-      zIndex: 10
+    <div className="fade-up" style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minHeight: '80vh' 
     }}>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        style={{
-          width: "100%",
-          maxWidth: "440px",
-          padding: "3rem",
-          background: "rgba(15, 15, 25, 0.4)",
-          backdropFilter: "blur(40px)",
-          borderRadius: "2.5rem",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          textAlign: "center"
-        }}
-      >
-        <div style={{ marginBottom: "2rem" }}>
-          <motion.div 
-            key={isRegister ? "reg-icon" : "login-icon"}
-            initial={{ rotate: -20, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            style={{ 
-              width: "70px", 
-              height: "70px", 
-              background: isRegister ? "linear-gradient(135deg, #ec4899, #8b5cf6)" : "linear-gradient(135deg, var(--accent), #818cf8)",
-              borderRadius: "1.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 1.5rem",
-              boxShadow: "0 0 40px var(--glow)"
-            }}
-          >
-            {isRegister ? <UserPlus size={36} color="white" /> : <Shield size={36} color="white" />}
-          </motion.div>
-          
-          <h1 style={{ fontSize: "2.2rem", fontWeight: 900, color: "white", marginBottom: "0.5rem" }}>
-            {isRegister ? "Create Account" : "Access Portal"}
+      <div style={{ 
+        background: 'rgba(255, 255, 255, 0.03)', 
+        backdropFilter: 'blur(40px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '2.5rem',
+        padding: '3.5rem',
+        width: '100%',
+        maxWidth: '450px',
+        boxShadow: '0 25px 50px rgba(0,0,0,0.3)'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ 
+            width: '64px', height: '64px', borderRadius: '1.2rem', 
+            background: 'rgba(129, 140, 248, 0.1)', color: 'var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 1.5rem'
+          }}>
+            {isLogin ? <LogIn size={32} /> : <UserPlus size={32} />}
+          </div>
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+            {isLogin ? 'Welcome Back' : 'Join the Future'}
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "1rem" }}>
-            {isRegister ? "Join the career discovery network" : "Secure authentication for all users"}
+          <p style={{ color: 'rgba(255,255,255,0.5)' }}>
+            {isLogin ? 'Sign in to access your career insights' : 'Create an account to start your journey'}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ position: "relative" }}>
-            <User size={18} style={{ position: "absolute", left: "1.2rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)" }} />
+        {error && (
+          <div style={{ 
+            padding: '1rem', 
+            background: error.includes('successful') ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
+            color: error.includes('successful') ? '#4ade80' : '#f87171',
+            borderRadius: '1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.9rem',
+            textAlign: 'center',
+            border: `1px solid ${error.includes('successful') ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+          }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', marginLeft: '0.5rem' }}>Username</label>
             <input 
-              type="text"
-              placeholder="Username"
+              type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
               style={{ 
-                width: "100%", 
-                padding: "1.2rem 1.2rem 1.2rem 3.5rem", 
-                background: "rgba(255,255,255,0.05)", 
-                border: "1px solid rgba(255,255,255,0.1)", 
-                borderRadius: "1.2rem", 
-                color: "white",
-                fontSize: "1rem",
-                outline: "none"
+                padding: '1.2rem', 
+                background: 'rgba(255,255,255,0.03)', 
+                border: '1px solid rgba(255,255,255,0.1)', 
+                borderRadius: '1.2rem', 
+                color: 'white',
+                outline: 'none',
+                transition: 'border-color 0.3s'
               }}
+              onFocus={(e) => e.target.style.borderColor = 'var(--accent)'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
             />
           </div>
 
-          <div style={{ position: "relative" }}>
-            <Lock size={18} style={{ position: "absolute", left: "1.2rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)" }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', marginLeft: '0.5rem' }}>Password</label>
             <input 
-              type="password"
-              placeholder="Password"
+              type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               style={{ 
-                width: "100%", 
-                padding: "1.2rem 1.2rem 1.2rem 3.5rem", 
-                background: "rgba(255,255,255,0.05)", 
-                border: "1px solid rgba(255,255,255,0.1)", 
-                borderRadius: "1.2rem", 
-                color: "white",
-                fontSize: "1rem",
-                outline: "none"
+                padding: '1.2rem', 
+                background: 'rgba(255,255,255,0.03)', 
+                border: '1px solid rgba(255,255,255,0.1)', 
+                borderRadius: '1.2rem', 
+                color: 'white',
+                outline: 'none'
               }}
+              onFocus={(e) => e.target.style.borderColor = 'var(--accent)'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
             />
           </div>
 
           <button 
             type="submit" 
-            disabled={isProcessing}
             className="btn btn-primary"
+            disabled={loading}
             style={{ 
-              width: "100%", 
-              padding: "1.2rem", 
-              borderRadius: "1.2rem", 
-              fontSize: "1.1rem", 
-              fontWeight: 700,
-              marginTop: "0.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "10px",
-              background: isRegister ? "linear-gradient(135deg, #ec4899, #8b5cf6)" : "var(--accent)"
+              marginTop: '1rem',
+              padding: '1.2rem',
+              fontSize: '1.1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.8rem'
             }}
           >
-            {isProcessing ? <Loader2 className="animate-spin" /> : (
-              isRegister ? <><UserPlus size={20} /> Create Account</> : <><LogIn size={20} /> Login Now</>
-            )}
+            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+            {!loading && <ArrowRight size={20} />}
           </button>
         </form>
 
-        <div style={{ marginTop: "1.5rem" }}>
+        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
           <button 
-            onClick={() => { setIsRegister(!isRegister); setError(null); setSuccess(null); }}
-            style={{ background: "transparent", border: "none", color: "var(--accent)", fontWeight: 600, cursor: "pointer" }}
-          >
-            {isRegister ? "Already have an account? Login" : "Don't have an account? Register"}
-          </button>
-        </div>
-
-        <AnimatePresence>
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              style={{ 
-                marginTop: "1.5rem", 
-                padding: "1rem", 
-                background: "rgba(239, 68, 68, 0.1)", 
-                borderRadius: "1rem", 
-                color: "#f87171",
-                fontSize: "0.9rem",
-                border: "1px solid rgba(239, 68, 68, 0.2)"
-              }}
-            >
-              {error}
-            </motion.div>
-          )}
-          {success && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              style={{ 
-                marginTop: "1.5rem", 
-                padding: "1rem", 
-                background: "rgba(34, 197, 94, 0.1)", 
-                borderRadius: "1rem", 
-                color: "#4ade80",
-                fontSize: "0.9rem",
-                border: "1px solid rgba(34, 197, 94, 0.2)"
-              }}
-            >
-              {success}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div style={{ marginTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "1.5rem" }}>
-          <button 
-            onClick={() => navigate("/")}
+            onClick={() => setIsLogin(!isLogin)}
             style={{ 
-              background: "transparent", 
-              border: "none", 
-              color: "rgba(255,255,255,0.4)", 
-              fontSize: "0.9rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              margin: "0 auto",
-              cursor: "pointer"
+              background: 'none', 
+              border: 'none', 
+              color: 'var(--accent)', 
+              cursor: 'pointer',
+              fontSize: '0.95rem'
             }}
           >
-            <ChevronLeft size={16} /> Back to Dashboard
+            {isLogin ? "New here? Create an account" : "Already have an account? Sign in"}
           </button>
         </div>
-      </motion.div>
+
+        <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: 0.5, fontSize: '0.8rem' }}>
+          <Shield size={14} />
+          <span>Secure Enterprise Authentication</span>
+        </div>
+      </div>
     </div>
   );
 }

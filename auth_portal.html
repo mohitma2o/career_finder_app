@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise RBAC Portal | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-sidebar: #020617;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- Auth Styles --- */
+        #auth-container {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at top left, #1e1b4b, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .auth-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .auth-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* --- Dashboard Styles --- */
+        #dashboard-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            color: var(--primary);
+        }
+
+        nav {
+            flex: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-section {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        header {
+            height: 64px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-card .label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+
+        .stat-card .trend {
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend.up { color: var(--success); }
+        .trend.down { color: var(--danger); }
+
+        /* Tables */
+        .data-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .search-box input {
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            width: 240px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .badge {
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-admin { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .badge-super { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-user { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); }
+
+        .hidden { display: none !important; }
+
+        /* Role based visibility */
+        [data-role="super_admin"] .only-super { display: flex; }
+        [data-role="admin"] .only-admin { display: flex; }
+        [data-role="user"] .only-user { display: flex; }
+
+        .only-super, .only-admin { display: none; }
+
+        /* Toast notifications */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(200%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #toast.show { transform: translateY(0); }
+    </style>
+</head>
+<body data-role="guest">
+
+    <!-- Auth View -->
+    <div id="auth-container">
+        <div class="auth-card" id="login-form">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your account</p>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn">Sign In <i data-lucide="arrow-right" size="18"></i></button>
+            </form>
+            <div class="auth-footer">
+                Don't have an account? <a href="#" onclick="toggleAuth(event, 'register')">Sign up</a>
+            </div>
+        </div>
+
+        <div class="auth-card hidden" id="register-form">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Get started with your free account</p>
+            </div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="reg-username" required placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" required placeholder="Create a password">
+                </div>
+                <button type="submit" class="btn">Create Account <i data-lucide="user-plus" size="18"></i></button>
+            </form>
+            <div class="auth-footer">
+                Already have an account? <a href="#" onclick="toggleAuth(event, 'login')">Log in</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-container" class="hidden">
+        <aside>
+            <div class="logo">
+                <i data-lucide="shield-check" size="24"></i>
+                <span>SecurePortal</span>
+            </div>
+            
+            <nav>
+                <div class="nav-link active" onclick="switchView('overview')">
+                    <i data-lucide="layout-dashboard" size="20"></i>
+                    <span>Dashboard</span>
+                </div>
+                
+                <div class="nav-section only-admin">Administration</div>
+                <div class="nav-link only-admin" onclick="switchView('activity-monitor')">
+                    <i data-lucide="activity" size="20"></i>
+                    <span>Activity Logs</span>
+                </div>
+                <div class="nav-link only-admin" onclick="switchView('sessions')">
+                    <i data-lucide="users" size="20"></i>
+                    <span>Live Sessions</span>
+                </div>
+
+                <div class="nav-section only-super">Super Admin</div>
+                <div class="nav-link only-super" onclick="switchView('user-management')">
+                    <i data-lucide="settings" size="20"></i>
+                    <span>Manage Users</span>
+                </div>
+
+                <div class="nav-section">Account</div>
+                <div class="nav-link" onclick="switchView('my-activity')">
+                    <i data-lucide="history" size="20"></i>
+                    <span>My History</span>
+                </div>
+                <div class="nav-link" onclick="handleLogout()">
+                    <i data-lucide="log-out" size="20"></i>
+                    <span>Logout</span>
+                </div>
+            </nav>
+        </aside>
+
+        <main>
+            <header>
+                <h2 id="view-title">Dashboard Overview</h2>
+                <div class="user-profile">
+                    <div class="avatar" id="user-initials">M</div>
+                    <div>
+                        <p style="font-weight: 600; font-size: 0.875rem;" id="header-username">Mohit</p>
+                        <p style="color: var(--text-muted); font-size: 0.75rem;" id="header-role">Super Admin</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Overview View -->
+                <div id="view-overview">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="label">Total Users</span>
+                            <span class="value" id="stat-total-users">0</span>
+                            <span class="trend up"><i data-lucide="trending-up" size="14"></i> +12% this month</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="label">Total Activity Logs</span>
+                            <span class="value" id="stat-total-logs">0</span>
+                            <span class="trend up"><i data-lucide="trending-up" size="14"></i> +5% from yesterday</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="label">Active Sessions</span>
+                            <span class="value" id="stat-active-sessions">1</span>
+                            <span class="trend up" style="color: var(--success)">● Live</span>
+                        </div>
+                    </div>
+
+                    <div class="data-card">
+                        <div class="card-header">
+                            <h3 style="font-size: 1rem;">Recent Global Activity</h3>
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" placeholder="Search logs..." oninput="filterTable(this, 'global-activity-table')">
+                            </div>
+                        </div>
+                        <table id="global-activity-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Timestamp</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- User Management View -->
+                <div id="view-user-management" class="hidden">
+                    <div class="data-card">
+                        <div class="card-header">
+                            <h3 style="font-size: 1rem;">User Directory</h3>
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" placeholder="Search users..." oninput="filterTable(this, 'user-management-table')">
+                            </div>
+                        </div>
+                        <table id="user-management-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Joined Date</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- My Activity View -->
+                <div id="view-my-activity" class="hidden">
+                    <div class="data-card">
+                        <div class="card-header">
+                            <h3 style="font-size: 1rem;">My Login & Activity History</h3>
+                        </div>
+                        <table id="my-activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Timestamp</th>
+                                    <th>Metadata</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Monitor View (Admin) -->
+                <div id="view-activity-monitor" class="hidden">
+                     <div class="data-card">
+                        <div class="card-header">
+                            <h3 style="font-size: 1rem;">Detailed Activity Audit</h3>
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" placeholder="Search all history..." oninput="filterTable(this, 'audit-table')">
+                            </div>
+                        </div>
+                        <table id="audit-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Timestamp</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sessions View -->
+                <div id="view-sessions" class="hidden">
+                    <div class="stats-grid">
+                         <!-- Session cards will go here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast">
+        <i data-lucide="info" id="toast-icon"></i>
+        <span id="toast-msg">Action completed successfully</span>
+    </div>
+
+    <script>
+        // --- Mock Database Initialization ---
+        const DB_KEY_USERS = 'rbac_portal_users';
+        const DB_KEY_LOGS = 'rbac_portal_logs';
+        const DB_KEY_SESSION = 'rbac_portal_token';
+
+        const INITIAL_USERS = [
+            { id: '1', username: 'mohit', password: 'mohit2045', role: 'super_admin', createdAt: new Date().toISOString() },
+            { id: '2', username: 'admin_test', password: 'password', role: 'admin', createdAt: new Date().toISOString() },
+            { id: '3', username: 'user_test', password: 'password', role: 'user', createdAt: new Date().toISOString() }
+        ];
+
+        function initDB() {
+            if (!localStorage.getItem(DB_KEY_USERS)) {
+                localStorage.setItem(DB_KEY_USERS, JSON.stringify(INITIAL_USERS));
+            }
+            if (!localStorage.getItem(DB_KEY_LOGS)) {
+                localStorage.setItem(DB_KEY_LOGS, JSON.stringify([
+                    { id: Date.now(), userId: '1', username: 'mohit', action: 'System Initialization', timestamp: new Date().toISOString(), metadata: 'Database created' }
+                ]));
+            }
+        }
+
+        // --- Core Logic ---
+        let currentUser = null;
+
+        function getDB(key) {
+            return JSON.parse(localStorage.getItem(key)) || [];
+        }
+
+        function setDB(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function logActivity(userId, username, action, metadata = '') {
+            const logs = getDB(DB_KEY_LOGS);
+            logs.unshift({
+                id: Date.now(),
+                userId,
+                username,
+                action,
+                timestamp: new Date().toISOString(),
+                metadata
+            });
+            setDB(DB_KEY_LOGS, logs.slice(0, 1000)); // Keep last 1000 logs
+        }
+
+        function checkSession() {
+            const token = localStorage.getItem(DB_KEY_SESSION);
+            if (token) {
+                const users = getDB(DB_KEY_USERS);
+                currentUser = users.find(u => u.username === token);
+                if (currentUser) {
+                    showDashboard();
+                } else {
+                    localStorage.removeItem(DB_KEY_SESSION);
+                    showAuth();
+                }
+            } else {
+                showAuth();
+            }
+        }
+
+        // --- Auth Handlers ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value;
+            const pass = document.getElementById('login-password').value;
+
+            const users = getDB(DB_KEY_USERS);
+            const found = users.find(u => u.username === user && u.password === pass);
+
+            if (found) {
+                localStorage.setItem(DB_KEY_SESSION, found.username);
+                currentUser = found;
+                logActivity(found.id, found.username, 'Login', 'Success');
+                showToast('Welcome back, ' + found.username, 'success');
+                showDashboard();
+            } else {
+                showToast('Invalid credentials', 'error');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const user = document.getElementById('reg-username').value;
+            const pass = document.getElementById('reg-password').value;
+
+            const users = getDB(DB_KEY_USERS);
+            if (users.find(u => u.username === user)) {
+                showToast('Username already exists', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now().toString(),
+                username: user,
+                password: pass,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            };
+
+            users.push(newUser);
+            setDB(DB_KEY_USERS, users);
+            logActivity(newUser.id, newUser.username, 'Registration', 'New user account');
+            
+            showToast('Account created! Please log in.', 'success');
+            toggleAuth(null, 'login');
+        }
+
+        function handleLogout() {
+            logActivity(currentUser.id, currentUser.username, 'Logout');
+            localStorage.removeItem(DB_KEY_SESSION);
+            currentUser = null;
+            showAuth();
+        }
+
+        // --- UI State Management ---
+        function showAuth() {
+            document.getElementById('auth-container').classList.remove('hidden');
+            document.getElementById('dashboard-container').classList.add('hidden');
+            document.body.setAttribute('data-role', 'guest');
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('dashboard-container').classList.remove('hidden');
+            document.body.setAttribute('data-role', currentUser.role);
+            
+            // Update UI with user info
+            document.getElementById('user-initials').innerText = currentUser.username[0].toUpperCase();
+            document.getElementById('header-username').innerText = currentUser.username;
+            document.getElementById('header-role').innerText = currentUser.role.replace('_', ' ').toUpperCase();
+
+            updateStats();
+            switchView('overview');
+            lucide.createIcons();
+        }
+
+        function toggleAuth(e, type) {
+            if (e) e.preventDefault();
+            if (type === 'register') {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+            } else {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('register-form').classList.add('hidden');
+            }
+        }
+
+        function switchView(viewId) {
+            const views = ['overview', 'user-management', 'my-activity', 'activity-monitor', 'sessions'];
+            views.forEach(v => {
+                const el = document.getElementById('view-' + v);
+                if (el) el.classList.add('hidden');
+            });
+
+            document.getElementById('view-' + viewId).classList.remove('hidden');
+            
+            // Update title
+            const titles = {
+                'overview': 'Dashboard Overview',
+                'user-management': 'User Management',
+                'my-activity': 'My Activity History',
+                'activity-monitor': 'Global Activity Audit',
+                'sessions': 'Real-time Sessions'
+            };
+            document.getElementById('view-title').innerText = titles[viewId];
+
+            // Update Nav Links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.innerText.toLowerCase().includes(viewId.replace('-', ' '))) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Populate data based on view
+            if (viewId === 'overview') renderGlobalActivity();
+            if (viewId === 'user-management') renderUserManagement();
+            if (viewId === 'my-activity') renderMyActivity();
+            if (viewId === 'activity-monitor') renderAuditTrail();
+            if (viewId === 'sessions') renderLiveSessions();
+        }
+
+        // --- Data Rendering ---
+        function updateStats() {
+            const users = getDB(DB_KEY_USERS);
+            const logs = getDB(DB_KEY_LOGS);
+            
+            document.getElementById('stat-total-users').innerText = users.length;
+            document.getElementById('stat-total-logs').innerText = logs.length;
+            // Mock active sessions: users who logged in/did action in last 10 mins
+            const tenMinsAgo = Date.now() - (10 * 60 * 1000);
+            const activeCount = new Set(logs.filter(l => new Date(l.timestamp).getTime() > tenMinsAgo).map(l => l.userId)).size;
+            document.getElementById('stat-active-sessions').innerText = Math.max(1, activeCount);
+        }
+
+        function renderGlobalActivity() {
+            const logs = getDB(DB_KEY_LOGS).slice(0, 10);
+            const tbody = document.querySelector('#global-activity-table tbody');
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td style="font-weight: 500;">${log.username}</td>
+                    <td>${log.action}</td>
+                    <td style="color: var(--text-muted);">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td><span class="badge badge-admin">Completed</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderUserManagement() {
+            const users = getDB(DB_KEY_USERS);
+            const tbody = document.querySelector('#user-management-table tbody');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.username}</td>
+                    <td style="color: var(--text-muted);">${new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td><span class="badge badge-${u.role.replace('_', '')}">${u.role.toUpperCase()}</span></td>
+                    <td>
+                        ${u.username === 'mohit' ? '<span style="color: var(--text-muted)">Locked</span>' : `
+                            <button class="btn btn-outline" style="width: auto; padding: 4px 8px; font-size: 11px;" onclick="toggleRole('${u.id}')">
+                                ${u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
+                            </button>
+                        `}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMyActivity() {
+            const logs = getDB(DB_KEY_LOGS).filter(l => l.userId === currentUser.id);
+            const tbody = document.querySelector('#my-activity-table tbody');
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td style="font-weight: 500;">${log.action}</td>
+                    <td style="color: var(--text-muted);">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td>${log.metadata || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAuditTrail() {
+            const logs = getDB(DB_KEY_LOGS);
+            const tbody = document.querySelector('#audit-table tbody');
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td style="font-weight: 500;">${log.username}</td>
+                    <td>${log.action}</td>
+                    <td style="color: var(--text-muted);">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td>${log.metadata || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderLiveSessions() {
+            const logs = getDB(DB_KEY_LOGS);
+            const container = document.querySelector('#view-sessions .stats-grid');
+            
+            // Get unique users with recent activity
+            const users = getDB(DB_KEY_USERS);
+            const tenMinsAgo = Date.now() - (10 * 60 * 1000);
+            const activeUserIds = [...new Set(logs.filter(l => new Date(l.timestamp).getTime() > tenMinsAgo).map(l => l.userId))];
+            
+            container.innerHTML = activeUserIds.length ? users.filter(u => activeUserIds.includes(u.id)).map(u => `
+                <div class="stat-card" style="border-left: 4px solid var(--success)">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="avatar">${u.username[0].toUpperCase()}</div>
+                        <div>
+                            <p style="font-weight: 600;">${u.username}</p>
+                            <p style="font-size: 0.75rem; color: var(--text-muted);">${u.role.toUpperCase()}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.75rem;">
+                        <p>Last seen: ${new Date(logs.find(l => l.userId === u.id).timestamp).toLocaleTimeString()}</p>
+                        <p style="color: var(--success)">Active Now</p>
+                    </div>
+                </div>
+            `).join('') : '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No active sessions found in the last 10 minutes.</p>';
+        }
+
+        // --- Admin Actions ---
+        function toggleRole(userId) {
+            const users = getDB(DB_KEY_USERS);
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) return;
+
+            const oldRole = users[userIndex].role;
+            const newRole = oldRole === 'admin' ? 'user' : 'admin';
+            users[userIndex].role = newRole;
+            
+            setDB(DB_KEY_USERS, users);
+            logActivity(currentUser.id, currentUser.username, `Role Change: ${users[userIndex].username}`, `Changed from ${oldRole} to ${newRole}`);
+            
+            showToast(`User ${users[userIndex].username} is now ${newRole}`, 'success');
+            renderUserManagement();
+            updateStats();
+        }
+
+        // --- Helpers ---
+        function filterTable(input, tableId) {
+            const filter = input.value.toLowerCase();
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-msg');
+
+            msgEl.innerText = msg;
+            toast.style.borderColor = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--danger)' : 'var(--border)');
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Initialize
+        initDB();
+        checkSession();
+        lucide.createIcons();
+
+        // Auto-refresh stats/sessions every 30s
+        setInterval(() => {
+            if (currentUser) {
+                updateStats();
+                if (!document.getElementById('view-sessions').classList.contains('hidden')) renderLiveSessions();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

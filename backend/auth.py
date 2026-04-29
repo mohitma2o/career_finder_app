@@ -61,11 +61,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    # --- DEVELOPER BYPASS ---
+    # --- MOCK & DEV BYPASS ---
     if token == "dev-admin-token":
-        return {"sub": ADMIN_EMAIL, "role": "super_admin", "name": "Dev Admin"}
+        return {"sub": ADMIN_EMAIL, "role": "super_admin", "id": 1}
     if token == "dev-user-token":
-        return {"sub": "user@example.com", "role": "user", "name": "Dev User"}
+        return {"sub": "user@example.com", "role": "user", "id": 2}
+    if token == "mock-token-super":
+        return {"sub": "mohit", "role": "super_admin", "id": "1"}
+    if token.startswith("mock-token-"):
+        return {"sub": "mock_user", "role": "user", "id": token.replace("mock-token-", "")}
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -75,6 +79,23 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         return payload
     except JWTError:
         raise credentials_exception
+
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+
+def get_optional_current_user(token: str = Depends(oauth2_scheme_optional)):
+    if not token:
+        return None
+    try:
+        # Reuse the logic from get_current_user but without raising exceptions
+        if token == "dev-admin-token": return {"sub": ADMIN_EMAIL, "role": "super_admin", "id": 1}
+        if token == "dev-user-token": return {"sub": "user@example.com", "role": "user", "id": 2}
+        if token == "mock-token-super": return {"sub": "mohit", "role": "super_admin", "id": "1"}
+        if token.startswith("mock-token-"): return {"sub": "mock_user", "role": "user", "id": token.replace("mock-token-", "")}
+
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except:
+        return None
 
 def is_admin(user = Depends(get_current_user)):
     if user.get("role") not in ["admin", "super_admin"]:
