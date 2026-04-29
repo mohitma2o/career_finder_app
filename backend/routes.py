@@ -404,6 +404,12 @@ async def career_mentor_chat(request: ChatRequest):
             return {"response": f"As a **{career_focus['career']}**, you can expect an average salary of around **INR {sal:,}**. Does this align with your financial goals?"}
         return {"response": "Salaries vary by role. Tech roles often start at 12L+ while Finance can go higher. Which specific career are you curious about?"}
 
+    if "resource" in msg or "link" in msg or "where to" in msg or (msg in ["yes", "yep", "sure", "ok", "please", "yes please", "yeah"]):
+        if career_focus:
+            resources = career_focus.get("free_resources", "Coursera, edX, and YouTube specialized channels.")
+            return {"response": f"Excellent! For **{career_focus['career']}**, I recommend these top free resources: **{resources}**. \n\nWould you like to know more about the salary or the skills required?"}
+        return {"response": "I can definitely find you resources! Which career path are we looking at right now?"}
+
     if "roadmap" in msg or "how to" in msg or "steps" in msg:
         if career_focus:
             steps = career_focus.get("roadmap", "Follow a specialized degree path and build projects.")
