@@ -12,16 +12,25 @@ MODEL_PATH = "career_model.pkl"
 ENCODER_PATH = "label_encoder.pkl"
 SCALER_PATH = "scaler.pkl"
 
+import threading
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # This runs on startup
-    # We can't easily import ml_model here because of circular/path issues 
-    # but we can rely on routes.py or just check if files exist
-    if not all(os.path.exists(p) for p in [MODEL_PATH, ENCODER_PATH, SCALER_PATH]):
-        print("Training ML model (first run)...")
-        from ml_model import train_model
-        train_model()
-        print("Model ready.")
+    # Check if models exist. If not, train in a background thread to avoid blocking the port binding
+    def background_train():
+        if not all(os.path.exists(p) for p in [MODEL_PATH, ENCODER_PATH, SCALER_PATH]):
+            print("Production: Training ML model in background...")
+            try:
+                from ml_model import train_model
+                train_model()
+                print("Production: Model training complete.")
+            except Exception as e:
+                print(f"Model training failed: {e}")
+    
+    # Start training in background so the server can bind to the port immediately
+    thread = threading.Thread(target=background_train)
+    thread.start()
+    
     yield
 
 app = FastAPI(title="Career Finder API", version="0.1.0", lifespan=lifespan)
