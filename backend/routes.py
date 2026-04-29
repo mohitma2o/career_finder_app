@@ -106,8 +106,15 @@ async def get_questionnaire():
 @router.post("/predict")
 async def predict(request: PredictRequest, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_current_user)):
     try:
-        results = predict_careers(request.responses, top_n=request.top_n)
-        
+        # 1. Attempt ML Prediction
+        try:
+            results = predict_careers(request.responses, top_n=request.top_n)
+        except Exception as ml_err:
+            print(f"ML Prediction not ready, using fallback: {ml_err}")
+            # 2. Fallback: Content-based matching if model is still training
+            df = load_careers_df()
+            results = _fallback_predict(request.responses, df, top_n=request.top_n)
+
         # Save to history if user is logged in
         if current_user:
             try:
@@ -126,7 +133,47 @@ async def predict(request: PredictRequest, db: Session = Depends(get_db), curren
         
         return results
     except Exception as e:
+        print(f"PREDICT ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def _fallback_predict(responses: dict, df: pd.DataFrame, top_n: int = 5):
+    """Simple keyword/score based fallback when ML model is unavailable."""
+    from ml_model import FEATURE_COLS, _compute_skill_gaps, _generate_why
+    
+    scores = []
+    for _, row in df.iterrows():
+        score = 0
+        # Basic matching logic (check if user inputs match category or skills)
+        resp_vals = str(responses.values()).lower()
+        if str(row.get("category")).lower() in resp_vals: score += 20
+        
+        # Skill matching
+        skills = str(row.get("key_skills", "")).lower().split(",")
+        for s in skills:
+            if s.strip() and s.strip() in resp_vals: score += 5
+            
+        scores.append((score, row))
+    
+    # Sort and take top_n
+    scores.sort(key=lambda x: x[0], reverse=True)
+    top_rows = [s[1] for s in scores[:top_n]]
+    
+    results = []
+    for row in top_rows:
+        career_name = row["career"]
+        results.append({
+            "career": career_name,
+            "confidence": 85.0, # Static confidence for fallback
+            "category": row.get("category", ""),
+            "salary_inr": int(row.get("avg_salary_inr", 0)),
+            "salary_usd": int(row.get("avg_salary_usd", 0)),
+            "growth": row.get("growth_outlook", ""),
+            "description": row.get("description", ""),
+            "key_skills": [s.strip() for s in row.get("key_skills", "").split(",") if s.strip()],
+            "why": _generate_why(responses, career_name, row),
+            "skill_gaps": _compute_skill_gaps(responses, career_name)
+        })
+    return results
 
 class LoginRequest(BaseModel):
     username: str

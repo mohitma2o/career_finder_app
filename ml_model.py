@@ -223,13 +223,13 @@ def train_model():
 
 
 def load_model():
-    """Load model from disk if exists, else train fresh."""
+    """Load model from disk if exists, else raise error to trigger fallback."""
     if all(os.path.exists(p) for p in [MODEL_PATH, ENCODER_PATH, SCALER_PATH]):
         model = joblib.load(MODEL_PATH)
         le = joblib.load(ENCODER_PATH)
         scaler = joblib.load(SCALER_PATH)
         return model, le, scaler
-    return train_model()[:3]
+    raise RuntimeError("Model files not found. Training may be in progress.")
 
 
 def predict_careers(responses: dict, top_n: int = 5) -> list[dict]:
