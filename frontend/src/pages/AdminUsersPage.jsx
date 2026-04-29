@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { Users, Shield, ShieldCheck, Search, ArrowLeftRight } from 'lucide-react';
+import { Users, Shield, ShieldCheck, Search, ArrowLeftRight, Download, BarChart2, TrendingUp, Activity } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 
 export default function AdminUsersPage() {
   const { token, user: currentUser, isAdmin } = useAuth();
@@ -57,18 +58,76 @@ export default function AdminUsersPage() {
     }
   };
 
+  const exportToCSV = () => {
+    const headers = ["ID", "Username", "Role"];
+    const rows = users.map(u => [u.id, u.username, u.role]);
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "user_directory.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const chartData = [
+    { name: 'Super Admin', value: users.filter(u => u.role === 'super_admin').length },
+    { name: 'Admin', value: users.filter(u => u.role === 'admin').length },
+    { name: 'User', value: users.filter(u => u.role === 'user').length },
+  ];
+
   const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(search.toLowerCase()) ||
-    u.role.toLowerCase().includes(search.toLowerCase())
+    u.username.toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isAdmin()) return <div style={{ padding: '4rem', textAlign: 'center' }}>Access Denied</div>;
 
   return (
     <div className="fade-up">
-      <div style={{ marginBottom: "3rem" }}>
-        <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>User Management</h1>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem' }}>Control access levels and manage administrative roles.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>Admin Console</h1>
+          <p style={{ color: 'var(--text-muted)' }}>System-wide user directory and activity metrics.</p>
+        </div>
+        <button className="btn" onClick={exportToCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={18} /> Export CSV
+        </button>
+      </div>
+
+      {/* Analytics Row */}
+      <div className="grid-3" style={{ marginBottom: '2rem' }}>
+        <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(129, 140, 248, 0.1)', padding: '1rem', borderRadius: '1rem' }}>
+            <Users color="var(--accent)" />
+          </div>
+          <div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{users.length}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Users</div>
+          </div>
+        </div>
+        <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(244, 63, 94, 0.1)', padding: '1rem', borderRadius: '1rem' }}>
+            <Activity color="#f43f5e" />
+          </div>
+          <div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{users.filter(u => u.role !== 'user').length}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Elevated Roles</div>
+          </div>
+        </div>
+        <div className="card" style={{ padding: '1.5rem' }}>
+          <ResponsiveContainer width="100%" height={60}>
+            <BarChart data={chartData}>
+              <Bar dataKey="value">
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={['#818CF8', '#38bdf8', '#10b981'][index]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '4px' }}>Role Distribution</div>
+        </div>
       </div>
 
       <div style={{ position: 'relative', marginBottom: '2.5rem' }}>

@@ -1,60 +1,34 @@
-/**
- * Horizontal bar chart rendered as SVG.
- * Each bar shows label, value, and a proportional filled bar.
- */
-export default function BarChart({ data, maxValue, valueFormatter, accentColor = "#15CF93" }) {
-  const barH = 28;
-  const gap = 10;
-  const labelW = 180;
-  const chartW = 500;
-  const totalW = labelW + chartW + 60;
-  const totalH = data.length * (barH + gap) + gap;
-  const computedMax = maxValue || Math.max(...data.map((d) => d.value), 1);
+import React from 'react';
+import { BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
+export default function BarChart({ data, valueFormatter, accentColor = "var(--accent)" }) {
   return (
-    <svg width="100%" viewBox={`0 0 ${totalW} ${totalH}`} style={{ display: "block" }}>
-      {data.map((d, i) => {
-        const y = i * (barH + gap) + gap;
-        const barWidth = (d.value / computedMax) * chartW;
-        const formatted = valueFormatter ? valueFormatter(d.value) : d.value;
-
-        return (
-          <g key={i}>
-            {/* Label */}
-            <text
-              x={labelW - 8}
-              y={y + barH / 2}
-              textAnchor="end"
-              dominantBaseline="central"
-              fill="#C0C0C0"
-              fontSize="12"
-              fontFamily="Inter, sans-serif"
-            >
-              {d.label}
-            </text>
-
-            {/* Track */}
-            <rect x={labelW} y={y} width={chartW} height={barH} rx="4" fill="rgba(255,255,255,0.04)" />
-
-            {/* Fill */}
-            <rect x={labelW} y={y} width={barWidth} height={barH} rx="4" fill={accentColor} opacity="0.85">
-              <animate attributeName="width" from="0" to={barWidth} dur="0.6s" fill="freeze" />
-            </rect>
-
-            {/* Value */}
-            <text
-              x={labelW + chartW + 8}
-              y={y + barH / 2}
-              dominantBaseline="central"
-              fill="#8A8A8A"
-              fontSize="12"
-              fontFamily="Inter, sans-serif"
-            >
-              {formatted}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+    <div style={{ width: '100%', height: 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ReBarChart
+          layout="vertical"
+          data={data}
+          margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+        >
+          <XAxis type="number" hide />
+          <YAxis 
+            dataKey="label" 
+            type="category" 
+            tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 500 }}
+            width={90}
+          />
+          <Tooltip 
+            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+            formatter={(value) => valueFormatter ? valueFormatter(value) : value}
+            contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+          />
+          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={accentColor} fillOpacity={0.8 - (index * 0.1)} />
+            ))}
+          </Bar>
+        </ReBarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

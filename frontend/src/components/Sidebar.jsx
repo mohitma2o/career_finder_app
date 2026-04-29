@@ -1,10 +1,12 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Clipboard, Search, BarChart2, History, FileText, Settings, LogIn, LogOut, User } from "lucide-react";
+import { Home, Clipboard, Search, BarChart2, History, FileText, Settings, LogIn, LogOut, User, Palette, BookOpen } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../theme/ThemeProvider";
 
 export default function Sidebar({ hasResults }) {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme, themes } = useTheme();
   
   const links = [
     { to: "/", label: "Home", icon: Home },
@@ -12,6 +14,7 @@ export default function Sidebar({ hasResults }) {
     { to: "/explore", label: "Database", icon: Search },
     { to: "/history", label: "History", icon: History },
     { to: "/resume-maker", label: "Resume Maker", icon: FileText },
+    { to: "/flashcards", label: "Mastery", icon: BookOpen },
   ];
 
   if (hasResults) {
@@ -46,13 +49,7 @@ export default function Sidebar({ hasResults }) {
 
         {isAdmin() && (
           <>
-            <div className="sidebar-section-title" style={{ 
-              fontSize: '0.7rem', 
-              fontWeight: 800, 
-              color: 'rgba(255,255,255,0.2)', 
-              margin: '2rem 0 1rem 1.5rem',
-              letterSpacing: '0.1em'
-            }}>ADMINISTRATION</div>
+            <div className="sidebar-section-title">ADMINISTRATION</div>
             {adminLinks.map((l) => (
               <NavLink
                 key={l.to}
@@ -70,6 +67,28 @@ export default function Sidebar({ hasResults }) {
       </nav>
 
       <div className="sidebar-footer" style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+        {/* Theme Swatcher */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', justifyContent: 'center' }}>
+          {themes.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTheme(t.id)}
+              title={t.name}
+              style={{
+                width: '14px',
+                height: '14px',
+                borderRadius: '50%',
+                background: t.color,
+                border: theme === t.id ? '2px solid white' : 'none',
+                cursor: 'pointer',
+                padding: 0,
+                boxShadow: theme === t.id ? `0 0 10px ${t.color}` : 'none',
+                transition: 'all 0.2s'
+              }}
+            />
+          ))}
+        </div>
+
         {user ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -94,8 +113,6 @@ export default function Sidebar({ hasResults }) {
                 border: 'none', borderRadius: '0.8rem', padding: '0.8rem',
                 fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s'
               }}
-              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
-              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
             >
               <LogOut size={16} />
               Logout

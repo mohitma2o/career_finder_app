@@ -14,8 +14,11 @@ import ThreeCanvas from "./components/ThreeCanvas";
 import LandingScene from "./components/LandingScene";
 import LoginPage from "./pages/LoginPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import CommandPalette from "./components/CommandPalette";
+import FlashcardsPage from "./pages/FlashcardsPage";
 
 export default function App() {
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [results, setResults] = useState(() => {
     const saved = localStorage.getItem("cf_results");
     return saved ? JSON.parse(saved) : null;
@@ -60,8 +63,20 @@ export default function App() {
     localStorage.setItem("cf_responses", JSON.stringify(hResponses));
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <ThemeProvider>
+      <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
       <div ref={containerRef} className="app-container" style={{ position: 'relative', minHeight: '100vh', background: '#000' }}>
         {/* Persistent 3D Galaxy Background */}
         <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 0 }}>
@@ -99,6 +114,7 @@ export default function App() {
               <Route path="/resume-maker" element={<ResumeMakerPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/flashcards" element={<FlashcardsPage />} />
             </Routes>
           </main>
         </div>

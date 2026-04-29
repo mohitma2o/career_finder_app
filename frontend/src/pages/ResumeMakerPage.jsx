@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Download, Sparkles, Check, ChevronRight, ChevronLeft, BarChart2, ShieldAlert, Award, BookOpen } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Sparkles, Check, ChevronRight, ChevronLeft, BarChart2, ShieldAlert, Award, BookOpen, Brain } from 'lucide-react';
 import { analyzeResume, exportResumePdf, getCareers, rewriteText } from '../api/client';
+import LocalAIAnalyzer from '../components/LocalAIAnalyzer';
 
 export default function ResumeMakerPage() {
   const navigate = useNavigate();
@@ -440,6 +441,11 @@ export default function ResumeMakerPage() {
                 <p style={{ margin: 0, letterSpacing: '0.5px' }}>{resumeData.skills || 'Technical Expertise, Strategic Leadership, Analytical Problem Solving'}</p>
               </div>
             </div>
+          </div>
+
+          {/* Local AI Audit Section */}
+          <div style={{ marginTop: '2rem' }}>
+            <LocalAIAnalyzer text={resumeData.summary + " " + resumeData.experience.map(e => e.description).join(" ")} targetCareer={targetCareer} />
           </div>
         </div>
 

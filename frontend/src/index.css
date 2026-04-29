@@ -31,23 +31,53 @@
   --header-h:  0px;
 }
 
-html.dark {
-  /* Dark Theme Variables */
-  --bg:        #000000; /* Pure black Jeton style */
+html.dark, [data-theme='dark'] {
+  /* Default Deep Space Dark */
+  --bg:        #000000;
   --bg-raised: #111111;
   --surface:   rgba(255, 255, 255, 0.05);
   --border:    rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(255, 255, 255, 0.2);
-
   --accent:    #818CF8;
-  --accent-dim: rgba(129, 140, 248, 0.12);
-  --glow:      rgba(129, 140, 248, 0.25);
   --cyan:      #C084FC;
-  --amber:     #FBBF24;
-
-  --text:      #FFFFFF; /* Pure white text */
+  --text:      #FFFFFF;
   --text-muted:#9CA3AF;
-  --text-white:#FFFFFF;
+  --glow:      rgba(129, 140, 248, 0.25);
+}
+
+[data-theme='midnight'] {
+  --bg:        #020617;
+  --bg-raised: #0f172a;
+  --surface:   rgba(30, 41, 59, 0.5);
+  --border:    rgba(148, 163, 184, 0.1);
+  --accent:    #38bdf8;
+  --cyan:      #818cf8;
+  --text:      #f8fafc;
+  --text-muted:#94a3b8;
+  --glow:      rgba(56, 189, 248, 0.25);
+}
+
+[data-theme='cyberpunk'] {
+  --bg:        #09090b;
+  --bg-raised: #18181b;
+  --surface:   rgba(244, 63, 94, 0.05);
+  --border:    rgba(244, 63, 94, 0.2);
+  --accent:    #f43f5e;
+  --cyan:      #fbbf24;
+  --text:      #fafafa;
+  --text-muted:#a1a1aa;
+  --glow:      rgba(244, 63, 94, 0.3);
+}
+
+[data-theme='emerald'] {
+  --bg:        #020617;
+  --bg-raised: #052e16;
+  --surface:   rgba(16, 185, 129, 0.05);
+  --border:    rgba(16, 185, 129, 0.15);
+  --accent:    #10b981;
+  --cyan:      #34d399;
+  --text:      #ecfdf5;
+  --text-muted:#6ee7b7;
+  --glow:      rgba(16, 185, 129, 0.25);
 }
 
 /* ---- Reset ---- */

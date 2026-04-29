@@ -4,21 +4,24 @@ import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  // Lock to dark mode for the premium space aesthetic
-  const isDarkMode = true;
+  const [theme, setTheme] = useState(() => localStorage.getItem('cf_theme_aura') || 'dark');
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
-  }, []);
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.classList.add('dark'); // Always keep dark class for overall aesthetic
+    localStorage.setItem('cf_theme_aura', theme);
+  }, [theme]);
 
-  const toggleTheme = () => {}; // Disabled
-
-  const themeValue = { isDarkMode, toggleTheme };
+  const themes = [
+    { id: 'dark', name: 'Deep Space', color: '#818CF8' },
+    { id: 'midnight', name: 'Midnight', color: '#38bdf8' },
+    { id: 'cyberpunk', name: 'Cyberpunk', color: '#f43f5e' },
+    { id: 'emerald', name: 'Emerald', color: '#10b981' }
+  ];
 
   return (
-    <ThemeContext.Provider value={themeValue}>
-      <StyledThemeProvider theme={{ mode: isDarkMode ? 'dark' : 'light' }}>
+    <ThemeContext.Provider value={{ theme, setTheme, themes }}>
+      <StyledThemeProvider theme={{ mode: 'dark', aura: theme }}>
         {children}
       </StyledThemeProvider>
     </ThemeContext.Provider>
