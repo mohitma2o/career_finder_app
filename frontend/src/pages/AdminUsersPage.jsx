@@ -11,7 +11,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const API_URL = 'http://localhost:8000/api';
+  const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "/api";
 
   useEffect(() => {
     if (token) fetchUsers();

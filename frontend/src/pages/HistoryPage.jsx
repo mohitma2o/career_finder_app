@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Trash2, Clock, ChevronRight, BarChart2, Search, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
@@ -12,7 +13,7 @@ export default function HistoryPage({ onRestore }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const API_URL = 'http://localhost:8000/api';
+  const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "/api";
 
   useEffect(() => {
     fetchHistory();

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('cf_token'));
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'http://localhost:8000/api';
+  const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "/api";
 
   useEffect(() => {
     if (token) {
