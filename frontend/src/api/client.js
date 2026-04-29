@@ -57,12 +57,10 @@ export async function getCareers(filters = {}) {
 }
 
 export async function exportPdf(results, responses) {
-  const res = await fetch(`${BASE}/export/pdf`, {
+  const res = await request("/export/pdf", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ results, responses }),
   });
-  if (!res.ok) throw new Error("PDF export failed");
   return res.blob();
 }
 

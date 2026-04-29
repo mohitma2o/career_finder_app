@@ -2,14 +2,23 @@
 
 A tool designed to help students and professionals identify suitable career paths through data-driven analysis and machine learning. This application combines a comprehensive self-assessment with an ensemble model to provide tailored recommendations, market insights, and actionable roadmaps.
 
-## Technical Overview
+## 🚀 Tech Stack
+This project utilizes a high-performance, professional-grade technology stack.
 
-The project is built with a decoupled architecture focusing on performance and accuracy.
+### Frontend
+- **Framework**: React 18 with Vite
+- **3D Graphics**: Three.js & React Three Fiber (R3F)
+- **Visuals**: Framer Motion, Lucide Icons, and Custom Glassmorphism CSS
+- **Analytics**: Recharts for data visualization
+- **Authentication**: Google OAuth 2.0
 
-- **Frontend**: Developed with React and Vite, utilizing Three.js for interactive visualizations and Framer Motion for interface transitions.
-- **Backend**: Built on FastAPI to ensure high-performance API responses and seamless communication with the ML engine.
-- **Machine Learning**: Utilizes an ensemble approach with Scikit-Learn (RandomForest, GradientBoosting, and SVM) to analyze user profiles against a dataset of over 400 career signatures.
-- **Data Management**: Powered by Pandas and NumPy for efficient data processing and feature engineering.
+### Backend
+- **Framework**: FastAPI (Asynchronous Python)
+- **AI Intelligence**: Google Gemini Pro (LLM) for reasoning and roadmaps
+- **Machine Learning**: Scikit-Learn, Pandas, NumPy, and Joblib
+- **Database**: SQLite with SQLAlchemy 2.0 ORM
+- **Security**: JWT (Jose) and Bcrypt (Passlib)
+- **Reports**: FPDF2 for dynamic PDF generation
 
 ## Core Functionality
 

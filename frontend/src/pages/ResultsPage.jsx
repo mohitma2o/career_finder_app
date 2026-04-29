@@ -144,11 +144,15 @@ TECHNICAL TOOLS & STACK
   const handlePdfExport = async () => {
     try {
       const blob = await exportPdf(results, responses);
-      const url = URL.createObjectURL(blob);
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement("a");
+      a.style.display = "none";
       a.href = url;
       a.download = "career_report.pdf";
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
       alert("PDF export failed: " + err.message);
@@ -156,18 +160,30 @@ TECHNICAL TOOLS & STACK
   };
 
   const handleJsonExport = () => {
-    const report = {
-      generated_on: new Date().toISOString(),
-      responses,
-      recommendations: results.map(({ skill_gaps, ...rest }) => rest),
-    };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "career_profile.json";
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const report = {
+        generated_on: new Date().toISOString(),
+        responses,
+        recommendations: (results || []).map(r => {
+          if (typeof r !== 'object' || r === null) return r;
+          const { skill_gaps, ...rest } = r;
+          return rest;
+        }),
+      };
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = "career_profile.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("JSON Export Error:", err);
+      alert("JSON export failed: " + err.message);
+    }
   };
 
   const handleReset = () => {

@@ -150,11 +150,16 @@ export default function ResumeMakerPage() {
   const handleDownloadPdf = async () => {
     try {
       const blob = await exportResumePdf(resumeData, targetCareer);
-      const url = URL.createObjectURL(blob);
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
+      a.style.display = "none";
       a.href = url;
-      a.download = `${resumeData.personal.name.replace(/\s+/g, '_')}_Resume.pdf`;
+      const safeName = (resumeData.personal.name || "Resume").replace(/\s+/g, '_');
+      a.download = `${safeName}.pdf`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
