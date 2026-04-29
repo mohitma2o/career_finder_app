@@ -51,6 +51,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Career Finder API is running professionally.", "docs": "/docs"}
+
 @app.get("/health")
 async def health_check():
     import time
