@@ -211,18 +211,20 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
             db.add(user)
             db.commit()
             db.refresh(user)
-        elif user.role != "super_admin":
-            # Correct role if it was accidentally changed
-            user.role = "super_admin"
-            db.commit()
+        else:
+            # Ensure role is correct
+            if user.role != "super_admin":
+                user.role = "super_admin"
+                db.commit()
         
         return generate_auth_response(user)
 
     # 2. Secondary Authorization: Database Credential Verification
     user = db.query(DBUser).filter(DBUser.username == request.username).first()
     
-    # Check credentials without leaking existence (Top 1% Security Practice)
     if not user or not verify_password(request.password, user.hashed_password):
+        # Log failure for debugging but don't leak info to client
+        print(f"Login failed for user: {request.username}")
         raise HTTPException(
             status_code=401,
             detail="Authentication failed. Please check your credentials.",
